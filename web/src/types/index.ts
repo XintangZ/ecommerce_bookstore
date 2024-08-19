@@ -1,1 +1,1 @@
-// export * from './example.type.ts';
+// export * from './example.type';

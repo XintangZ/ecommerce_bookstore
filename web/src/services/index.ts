@@ -1,1 +1,1 @@
-// export * from './example.service.ts';
+// export * from './example.service';

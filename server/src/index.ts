@@ -1,6 +1,7 @@
 import dotenv from 'dotenv';
 import express from 'express';
 import { connectDB } from './config/db';
+import { bookRoute } from './routes/book.route';
 // import routes from './routes';
 
 // Load environment variables
@@ -15,7 +16,7 @@ const app = express();
 app.use(express.json());
 
 // Set up routes
-// app.use('/', routes);
+app.use('/', bookRoute());
 
 // Error handling middleware
 // app.use(errorMiddleware);
