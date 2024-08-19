@@ -1,0 +1,5 @@
+// controllers
+// create a new file for each controller, this file will ONLY contain export statements
+// for example:
+// export * from './user.controller.ts';
+// export * from './book.controller.ts';
