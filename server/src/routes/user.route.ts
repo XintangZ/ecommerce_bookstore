@@ -5,15 +5,15 @@ import { authenticateJWT } from '../middlewares/jwt.middleware';
 export const userRoute = () => {
 	const router = Router();
 
-  router.get('/user/user', authenticateJWT, getUser);
+  router.get('/users/me', authenticateJWT, getUser);
 
-	router.post('/user/login', login);
+	router.post('/users/login', login);
 
-	router.post('/user/add', createUser);
+	router.post('/users', createUser);
 
-	router.put('/user/update', authenticateJWT, updateUser);
+	router.put('/users/me', authenticateJWT, updateUser);
 
-	router.delete('/user/delete', authenticateJWT, deleteUser);
+	router.delete('/users/me', authenticateJWT, deleteUser);
 
 	return router;
 };
