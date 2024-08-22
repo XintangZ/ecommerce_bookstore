@@ -6,3 +6,4 @@ export * from './book.model';
 export * from './category.model';
 export * from './review.model';
 export * from './user.model';
+export * from './order.model';
