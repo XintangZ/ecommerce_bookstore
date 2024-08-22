@@ -4,7 +4,14 @@ import { z } from 'zod';
 import { Book } from '../models/index';
 import { createBookSchema } from '../schema';
 
+// Create a book
 const createBook = async (req: Request, res: Response) => {
+	// check if the user is admin
+	const { user: { isAdmin = false } = {} } = res.locals;
+	if (!isAdmin) {
+		return res.status(403).json({ message: 'You are not authorized to perform this action.' });
+	}
+
 	try {
 		// Validate request body using Zod schema
 		const validatedData = createBookSchema.parse(req.body);
@@ -24,6 +31,7 @@ const createBook = async (req: Request, res: Response) => {
 	}
 };
 
+// Get all books
 const getAllBooks = async (req: Request, res: Response) => {
 	const { page = 1, limit = 10 } = req.query;
 
@@ -63,7 +71,8 @@ const getAllBooks = async (req: Request, res: Response) => {
 	}
 };
 
-const getBook = async (req: Request, res: Response) => {
+// Get a book by ID
+const getBookById = async (req: Request, res: Response) => {
 	const { id } = req.params;
 
 	// Validate the ID format
@@ -85,7 +94,13 @@ const getBook = async (req: Request, res: Response) => {
 	}
 };
 
+// Update a book
 const updateBook = async (req: Request, res: Response) => {
+	const { user: { isAdmin = false } = {} } = res.locals;
+	if (!isAdmin) {
+		return res.status(403).json({ message: 'You are not authorized to perform this action.' });
+	}
+
 	const { id } = req.params;
 	const updateData = req.body;
 
@@ -109,7 +124,13 @@ const updateBook = async (req: Request, res: Response) => {
 	}
 };
 
+// Delete a book
 const deleteBook = async (req: Request, res: Response) => {
+	const { user: { isAdmin = false } = {} } = res.locals;
+	if (!isAdmin) {
+		return res.status(403).json({ message: 'You are not authorized to perform this action.' });
+	}
+
 	const { id } = req.params;
 
 	if (!mongoose.Types.ObjectId.isValid(id)) {
@@ -132,4 +153,4 @@ const deleteBook = async (req: Request, res: Response) => {
 	}
 };
 
-export { createBook, deleteBook, getAllBooks, getBook, updateBook };
+export { createBook, deleteBook, getAllBooks, getBookById, updateBook };

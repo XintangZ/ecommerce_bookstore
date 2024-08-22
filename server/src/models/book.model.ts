@@ -6,13 +6,8 @@ interface Book extends Document {
 	description: string;
 	isbn: string;
 	price: number;
-	category: string;
+	categoryId: Schema.Types.ObjectId;
 	stock: number;
-	ratings: {
-		userId: string;
-		rating: number;
-		review: string;
-	}[];
 	publishedDate: Date;
 	coverImage: string;
 }
@@ -23,15 +18,8 @@ const bookSchema = new Schema<Book>({
 	description: { type: String },
 	isbn: { type: String, unique: true },
 	price: { type: Number, required: true },
-	category: { type: String, required: true },
+	categoryId: { type: Schema.Types.ObjectId, ref: 'Category', required: true },
 	stock: { type: Number, required: true },
-	ratings: [
-		{
-			userId: { type: Schema.Types.ObjectId, ref: 'User' },
-			rating: { type: Number, min: 1, max: 5 },
-			review: { type: String },
-		},
-	],
 	publishedDate: { type: Date, required: true },
 	coverImage: { type: String },
 });
