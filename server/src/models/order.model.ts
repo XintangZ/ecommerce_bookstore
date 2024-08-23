@@ -1,5 +1,4 @@
-import { Schema, model, Document, Types } from 'mongoose';
-var mongoose = require('mongoose');
+import { Schema, model, Document} from 'mongoose';
 
 
 interface Order extends Document {
