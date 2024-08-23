@@ -4,7 +4,6 @@ import { Types } from 'mongoose';
 // Zod validation schema for Order
 export const createOrderSchema = z.object({
 
-    userId: z.string().min(1, { message: 'Invalid user ID format' }),
     books: z.array(
         z.object({
             bookId: z.string().min(1, { message: 'Invalid book ID format' }),

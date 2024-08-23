@@ -65,6 +65,7 @@ const login = async (req: Request, res: Response, next: NextFunction) => {
 
     const tokenData = {
       userId: existingUser._id,
+      isAdmin: existingUser.isAdmin,
     };
 
     const token = jwt.sign(tokenData, secretKey, {

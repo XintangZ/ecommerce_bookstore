@@ -39,7 +39,7 @@ export const createOrder = async (req: Request, res: Response) => {
 
 // Get all orders
 export const getAllOrders = async (req: Request, res: Response) => {
-    console.log("123");
+    
     console.log(res.locals);
     const { page = 1, limit = 10 } = req.query;
 
