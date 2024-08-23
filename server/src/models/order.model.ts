@@ -1,9 +1,11 @@
 import { Schema, model, Document, Types } from 'mongoose';
+var mongoose = require('mongoose');
+
 
 interface Order extends Document {
-    userId: Types.ObjectId;
+    userId: Schema.Types.ObjectId;
     books: {
-        bookId: string;
+        bookId: Schema.Types.ObjectId;
         quantity: number;
         price: number;
     }[];
@@ -19,13 +21,16 @@ interface Order extends Document {
     };
     status: string;
     placedAt: Date;
+    
 }
 
 const orderSchema = new Schema<Order>({
+    
     userId: { type: Schema.Types.ObjectId, ref: 'User', required: true },
     books: [
         {
             bookId: { type: Schema.Types.ObjectId, ref: 'Book', required: true },
+           
             quantity: { type: Number, required: true },
             price: { type: Number, required: true },
         }
@@ -52,6 +57,8 @@ const orderSchema = new Schema<Order>({
     },
     status: { type: String, enum: ['Pending', 'Shipped', 'Cancelled'], default: 'Pending' },
     placedAt: { type: Date, default: Date.now }
+    
+    
 });
 
 export const Order = model<Order>('Order', orderSchema);

@@ -26,6 +26,7 @@ export const getAllOrders = async (req: Request, res: Response) => {
     const { page = 1, limit = 10 } = req.query;
 
     try {
+        
         // Convert pagination parameters to numbers
         const pageNumber = parseInt(page as string, 10);
         const limitNumber = parseInt(limit as string, 10);
@@ -60,6 +61,9 @@ export const getAllOrders = async (req: Request, res: Response) => {
         return res.status(500).json({ message: 'Server error' });
     }
 };
+
+
+
 
 
 // Get a single order by ID
