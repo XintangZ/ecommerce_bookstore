@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { createUser, deleteUser, login, updateUser, getUser } from '../controllers';
+import { createUserAndCart, deleteUser, login, updateUser, getUser, updateWishlist, logout } from '../controllers';
 import { authenticateJWT } from '../middlewares/jwt.middleware';
 
 export const userRoute = () => {
@@ -9,11 +9,15 @@ export const userRoute = () => {
 
 	router.post('/users/login', login);
 
-	router.post('/users', createUser);
+	router.post('/users', createUserAndCart);
 
 	router.put('/users/me', authenticateJWT, updateUser);
 
 	router.delete('/users/me', authenticateJWT, deleteUser);
+
+	router.put('/users/me/wishlist', authenticateJWT, updateWishlist);
+
+	router.post('/users/logout', authenticateJWT, logout);
 
 	return router;
 };

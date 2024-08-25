@@ -10,10 +10,6 @@ export interface IUser extends Document {
         zipCode: string;
         country: string;
     };
-    cart: {
-        bookId: string;
-        quantity: number;
-    }[];
     wishlist: string[];
     isAdmin: boolean;
 }
@@ -28,12 +24,6 @@ const userSchema = new Schema<IUser>({
         zipCode: { type: String },
         country: { type: String },
     },
-    cart: [
-        {
-            bookId: { type: Schema.Types.ObjectId, ref: 'Book' },
-            quantity: { type: Number, required: true },
-        }
-    ],
     wishlist: [{ type: Schema.Types.ObjectId, ref: 'Book' }],
     isAdmin: { type: Boolean, default: false }
 });

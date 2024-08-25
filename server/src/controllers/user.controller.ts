@@ -2,41 +2,51 @@ import bcrypt from 'bcrypt';
 import { NextFunction, Request, Response } from 'express';
 import mongoose from 'mongoose';
 import { z } from 'zod';
-import { User } from '../models/index';
-import { createUserSchema } from '../schema';
+import { User, Cart } from '../models/index';
+import { createUserSchema, updateUserSchema, updateWishlistSchema } from '../schema';
 import jwt from 'jsonwebtoken';
 
-const createUser = async (req: Request, res: Response) => {
+// Create a new user and a cart at the same time
+const createUserAndCart = async (req: Request, res: Response) => {
   try {
-      // Validate request body using Zod schema
-      const validatedData = createUserSchema.parse(req.body);
+    // Validate request body using Zod schema
+    const validatedData = createUserSchema.parse(req.body);
 
-      const existingUser = await User.findOne({ email: validatedData.email });
-      if (existingUser) {
-          return res.status(400).json({ message: 'User with this email already exists.' });
-      }
+    const existingUser = await User.findOne({ email: validatedData.email });
+    if (existingUser) {
+      return res.status(400).json({ message: 'User with this email already exists.' });
+    }
 
-      // Hash the password before saving the user
-      const saltRounds = 10; 
-      const hashedPassword = await bcrypt.hash(validatedData.password, saltRounds);
+    // Hash the password before saving the user
+    const saltRounds = 10;
+    const hashedPassword = await bcrypt.hash(validatedData.password, saltRounds);
 
-      // Create a new user with the hashed password
-      const newUser = new User({
-          ...validatedData,
-          password: hashedPassword
-      });
+    // Create a new user with the hashed password
+    const newUser = new User({
+      ...validatedData,
+      password: hashedPassword
+    });
 
-      const savedUser = await newUser.save();
+    const savedUser = await newUser.save();
 
-      return res.status(201).json({ data: savedUser });
+    // Create a cart for the newly created user
+    const newCart = new Cart({
+      userId: savedUser._id,
+      items: [] // Start with an empty cart
+    });
+
+    const savedCart = await newCart.save();
+
+    // Return the created user and cart
+    return res.status(201).json({ user: savedUser, cart: savedCart });
   } catch (error) {
-      if (error instanceof z.ZodError) {
-          // Zod validation errors
-          return res.status(400).json({ errors: error.errors });
-      }
+    if (error instanceof z.ZodError) {
+      // Zod validation errors
+      return res.status(400).json({ errors: error.errors });
+    }
 
-      console.error('Error creating user:', error);
-      return res.status(500).json({ message: 'Server error' });
+    console.error('Error creating user and cart:', error);
+    return res.status(500).json({ message: 'Server error' });
   }
 };
 
@@ -98,7 +108,6 @@ const getUser = async (req: Request, res: Response) => {
       email: existingUser.email,
       name: existingUser.name || '', 
       address: existingUser.address || {}, 
-      cart: existingUser.cart || [], 
       wishlist: existingUser.wishlist || [], 
       isAdmin: existingUser.isAdmin || false 
     };
@@ -112,7 +121,7 @@ const getUser = async (req: Request, res: Response) => {
 
 const updateUser = async (req: Request, res: Response) => {
 	const id = res.locals.user.userId;
-	const updateData = createUserSchema.parse(req.body);
+	const updateData = updateUserSchema.parse(req.body);
 
 	if (!mongoose.Types.ObjectId.isValid(id)) {
 		return res.status(400).json({ message: 'Invalid user ID format.' });
@@ -134,6 +143,36 @@ const updateUser = async (req: Request, res: Response) => {
 	}
 };
 
+const updateWishlist = async (req: Request, res: Response) => {
+	const id = res.locals.user.userId;
+	const updateData = updateWishlistSchema.parse(req.body);
+
+	if (!mongoose.Types.ObjectId.isValid(id)) {
+		return res.status(400).json({ message: 'Invalid user ID format.' });
+	}
+
+	try {
+		const existingUser = await User.findById(id);
+
+		if (!existingUser) {
+			return res.status(404).json({ message: `User with id "${id}" not found.` });
+		}
+
+    if (updateData.wishlist !== undefined) {
+      existingUser.wishlist = updateData.wishlist;
+    } else {
+      existingUser.wishlist = existingUser.wishlist || [];
+    }
+
+    const updatedUser = await existingUser.save();
+
+    res.status(200).json({ user: updatedUser });
+  } catch (error) {
+    console.error('Error updating wishlist:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+};
+
 const deleteUser = async (req: Request, res: Response) => {
   const id = res.locals.user.userId;
 
@@ -148,6 +187,8 @@ const deleteUser = async (req: Request, res: Response) => {
 			return res.status(404).json({ message: `User with id "${id}" not found.` });
 		}
 
+    await Cart.findOneAndDelete({ userId: id });
+
 		await User.findByIdAndDelete(id);
 
 		return res.status(200).json({ message: 'User deleted successfully.' });
@@ -157,4 +198,8 @@ const deleteUser = async (req: Request, res: Response) => {
 	}
 };
 
-export { createUser, deleteUser, getUser, login, updateUser };
+const logout = (req: Request, res: Response) => {
+  res.status(200).json({ message: 'Logged out successfully' });
+};
+
+export { createUserAndCart, deleteUser, getUser, login, updateUser, updateWishlist, logout };
