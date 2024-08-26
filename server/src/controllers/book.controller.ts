@@ -91,8 +91,7 @@ const getBookById = async (req: Request, res: Response) => {
 	}
 
 	try {
-		const book = await Book.findById(id);
-
+		const book = await Book.findById(id).populate('categoryId');
 		if (!book) {
 			return res.status(404).json({ message: 'book_not_found' });
 		}

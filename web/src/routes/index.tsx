@@ -1,6 +1,7 @@
 import { Route, Routes } from 'react-router-dom';
 import { MainLayout } from '../layouts';
 import { Home } from '../pages/Home';
+import { BookDetails, Books } from '../pages/client';
 
 function AppRoutes() {
 	return (
@@ -8,10 +9,10 @@ function AppRoutes() {
 			<Route path='/' element={<MainLayout />}>
 				<Route index element={<Home />} />
 
-				{/* <Route path='book'>
-					<Route path='all' element={<BrowseBooks />} />
-					<Route path='detail/:id' element={<BookDetail />} />
-				</Route> */}
+				<Route path='books'>
+					<Route index element={<Books />} />
+					<Route path=':id' element={<BookDetails />} />
+				</Route>
 			</Route>
 
 			{/* <Route path='login' element={<Login />} /> */}

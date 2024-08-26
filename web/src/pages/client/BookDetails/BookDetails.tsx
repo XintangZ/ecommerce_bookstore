@@ -1,1 +1,93 @@
-// book detail page
+import { Alert, Breadcrumbs, Button, CardMedia, Divider, Grid, Link, Stack, Typography } from '@mui/material';
+import { red } from '@mui/material/colors';
+import { useParams } from 'react-router-dom';
+import { Loading } from '../../../components';
+import { useGetBookById } from '../../../services/book.service';
+
+export function BookDetails() {
+	const { id: bookId = '' } = useParams<{ id: string }>();
+
+	const { data, isPending, isError, isSuccess } = useGetBookById(bookId);
+
+	if (isPending) return <Loading />;
+
+	if (isError) return <Alert severity='error'>An error occurred.</Alert>;
+
+	if (isSuccess && !data) {
+		return <Alert severity='warning'>Book not found.</Alert>;
+	}
+
+	if (isSuccess && data) {
+		const { data: book } = data;
+
+		return (
+			<Stack gap={2}>
+				<Breadcrumbs aria-label='breadcrumb'>
+					<Link underline='hover' color='inherit' href='/'>
+						Home
+					</Link>
+					<Link underline='hover' color='inherit' href='/books'>
+						Books
+					</Link>
+					<Typography color='text.primary'>{book.title}</Typography>
+				</Breadcrumbs>
+
+				<Grid container>
+					<Grid item xs={12} md={4}>
+						<CardMedia
+							component='img'
+							height='300'
+							image={book.coverImage || 'https://via.placeholder.com/300x450'}
+							alt={book.title}
+						/>
+					</Grid>
+					<Grid item xs={12} md={8}>
+						<Typography variant='h4' gutterBottom>
+							{book.title}
+						</Typography>
+						<Typography variant='h6' color='text.secondary' gutterBottom>
+							by {book.author}
+						</Typography>
+						<Typography variant='h5' color={red[600]}>
+							${book.price.toFixed(2)}
+						</Typography>
+						<Button variant='contained' disabled={!book.stock} sx={{ mt: 2 }}>
+							{!!book.stock ? `Add to Cart` : 'Out of Stock'}
+						</Button>
+					</Grid>
+				</Grid>
+
+				<Divider />
+				<Typography variant='h6'>Description</Typography>
+				<Stack gap={1} pl={2}>
+					<Typography paragraph>{book.description || 'No description available.'}</Typography>
+				</Stack>
+
+				<Divider />
+				<Typography variant='h6'>Book Details</Typography>
+				<Stack gap={1} pl={2}>
+					<Typography variant='body2' color='text.secondary'>
+						Author: {book.author}
+					</Typography>
+					<Typography variant='body2' color='text.secondary'>
+						ISBN: {book.isbn}
+					</Typography>
+					<Typography variant='body2' color='text.secondary'>
+						Category: {book.categoryId.name}
+					</Typography>
+					{book.publishedDate && (
+						<Typography variant='body2' color='text.secondary'>
+							Published Date: {new Date(book.publishedDate).toLocaleDateString()}
+						</Typography>
+					)}
+				</Stack>
+
+				<Divider />
+				<Typography variant='h6'>Reviews</Typography>
+				<Stack gap={1} pl={2}>
+					reviews
+				</Stack>
+			</Stack>
+		);
+	}
+}

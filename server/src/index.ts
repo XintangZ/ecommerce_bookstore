@@ -1,3 +1,4 @@
+import cors from 'cors';
 import dotenv from 'dotenv';
 import express from 'express';
 import { connectDB } from './config/db';
@@ -11,8 +12,9 @@ connectDB();
 
 const app = express();
 
-// Middleware to parse JSON bodies
+// Middlewares
 app.use(express.json());
+app.use(cors());
 
 // Set up routes
 app.use('/', bookRoute());
