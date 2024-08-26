@@ -75,14 +75,18 @@ export const getAllOrders = async (req: Request, res: Response) => {
             .exec();
 
         // Get the total count of orders for pagination metadata
-        const totalOrders = await Order.countDocuments(query).exec();
+		const totalOrders = await Order.countDocuments(query).exec();
+		
+		// Calculate total pages
+		const totalPages = Math.ceil(totalOrders / limitNumber);
 
         return res.status(200).json({
             data: orders,
             pagination: {
                 page: pageNumber,
                 limit: limitNumber,
-                totalOrders,
+				totalPages: totalPages,
+				totalItems: totalOrders,
             },
         });
     } catch (error) {

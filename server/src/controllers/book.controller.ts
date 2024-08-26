@@ -63,12 +63,16 @@ const getAllBooks = async (req: Request, res: Response) => {
 		// Get the total count of books for pagination metadata
 		const totalBooks = await Book.countDocuments().exec();
 
+		// Calculate total pages
+		const totalPages = Math.ceil(totalBooks / limitNumber);
+
 		return res.status(200).json({
 			data: books,
 			pagination: {
 				page: pageNumber,
 				limit: limitNumber,
-				totalBooks,
+				totalPages: totalPages,
+				totalItems: totalBooks,
 			},
 		});
 	} catch (error) {
