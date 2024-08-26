@@ -18,7 +18,7 @@ export const createOrderSchema = z.object({
         street: z.string().min(1, { message: 'Street is required' }),
         city: z.string().min(1, { message: 'City is required' }),
         province: z.string().min(1, { message: 'Province is required' }),
-        zipCode: z.string().min(1, { message: 'Zip code is required' }),
+        postalCode: z.string().min(1, { message: 'Zip code is required' }),
         phone: z.string()
             .regex(/^\d{3}-\d{3}-\d{4}$/, { message: 'Phone number must be in the format XXX-XXX-XXXX' })
             .min(12, { message: 'Phone number must be 12 characters long, including dashes' }),
