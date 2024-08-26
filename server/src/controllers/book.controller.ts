@@ -9,12 +9,18 @@ const createBook = async (req: Request, res: Response) => {
 	// check if the user is admin
 	const { user: { isAdmin = false } = {} } = res.locals;
 	if (!isAdmin) {
-		return res.status(403).json({ message: 'You are not authorized to perform this action.' });
+		return res.status(403).json({ message: 'unauthorized_action' });
 	}
 
 	try {
 		// Validate request body using Zod schema
 		const validatedData = createBookSchema.parse(req.body);
+
+		// Check if a book with the same ISBN already exists
+		const existingBook = await Book.findOne({ isbn: validatedData.isbn });
+		if (existingBook) {
+			return res.status(400).json({ message: 'isbn_already_exists' });
+		}
 
 		const newBook = new Book(validatedData);
 		const savedBook = await newBook.save();
@@ -23,11 +29,11 @@ const createBook = async (req: Request, res: Response) => {
 	} catch (error) {
 		if (error instanceof z.ZodError) {
 			// Zod validation errors
-			return res.status(400).json({ errors: error.errors });
+			return res.status(400).json({ message: 'validation_error', errors: error.errors });
 		}
 
 		console.error('Error creating book:', error);
-		return res.status(500).json({ message: 'Server error' });
+		return res.status(500).json({ message: 'server_error' });
 	}
 };
 
@@ -42,10 +48,10 @@ const getAllBooks = async (req: Request, res: Response) => {
 
 		// Validate pagination parameters
 		if (isNaN(pageNumber) || pageNumber < 1) {
-			return res.status(400).json({ message: 'Invalid page number.' });
+			return res.status(400).json({ message: 'invalid_page_number' });
 		}
 		if (isNaN(limitNumber) || limitNumber < 1) {
-			return res.status(400).json({ message: 'Invalid limit value.' });
+			return res.status(400).json({ message: 'invalid_limit_value' });
 		}
 
 		// Find books with pagination
@@ -67,7 +73,7 @@ const getAllBooks = async (req: Request, res: Response) => {
 		});
 	} catch (error) {
 		console.error('Error retrieving books:', error);
-		return res.status(500).json({ message: 'Server error' });
+		return res.status(500).json({ message: 'server_error' });
 	}
 };
 
@@ -77,20 +83,20 @@ const getBookById = async (req: Request, res: Response) => {
 
 	// Validate the ID format
 	if (!mongoose.Types.ObjectId.isValid(id)) {
-		return res.status(400).json({ message: 'Invalid book ID format.' });
+		return res.status(400).json({ message: 'invalid_book_id' });
 	}
 
 	try {
 		const book = await Book.findById(id);
 
 		if (!book) {
-			return res.status(404).json({ message: `Book with id "${id}" not found.` });
+			return res.status(404).json({ message: 'book_not_found' });
 		}
 
 		return res.status(200).json({ data: book });
 	} catch (error) {
 		console.error('Error retrieving book:', error);
-		return res.status(500).json({ message: 'Server error' });
+		return res.status(500).json({ message: 'server_error' });
 	}
 };
 
@@ -98,21 +104,21 @@ const getBookById = async (req: Request, res: Response) => {
 const updateBook = async (req: Request, res: Response) => {
 	const { user: { isAdmin = false } = {} } = res.locals;
 	if (!isAdmin) {
-		return res.status(403).json({ message: 'You are not authorized to perform this action.' });
+		return res.status(403).json({ message: 'unauthorized_action' });
 	}
 
 	const { id } = req.params;
 	const updateData = req.body;
 
 	if (!mongoose.Types.ObjectId.isValid(id)) {
-		return res.status(400).json({ message: 'Invalid book ID format.' });
+		return res.status(400).json({ message: 'invalid_book_id' });
 	}
 
 	try {
 		const book = await Book.findById(id);
 
 		if (!book) {
-			return res.status(404).json({ message: `Book with id "${id}" not found.` });
+			return res.status(404).json({ message: 'book_not_found' });
 		}
 
 		const updatedBook = await Book.findByIdAndUpdate(id, { $set: updateData }, { new: true, runValidators: true });
@@ -120,7 +126,7 @@ const updateBook = async (req: Request, res: Response) => {
 		return res.status(200).json({ data: updatedBook });
 	} catch (error) {
 		console.error('Error updating book:', error);
-		return res.status(500).json({ message: 'Server error' });
+		return res.status(500).json({ message: 'server_error' });
 	}
 };
 
@@ -128,28 +134,28 @@ const updateBook = async (req: Request, res: Response) => {
 const deleteBook = async (req: Request, res: Response) => {
 	const { user: { isAdmin = false } = {} } = res.locals;
 	if (!isAdmin) {
-		return res.status(403).json({ message: 'You are not authorized to perform this action.' });
+		return res.status(403).json({ message: 'unauthorized_action' });
 	}
 
 	const { id } = req.params;
 
 	if (!mongoose.Types.ObjectId.isValid(id)) {
-		return res.status(400).json({ message: 'Invalid book ID format.' });
+		return res.status(400).json({ message: 'invalid_book_id' });
 	}
 
 	try {
 		const book = await Book.findById(id);
 
 		if (!book) {
-			return res.status(404).json({ message: `Book with id "${id}" not found.` });
+			return res.status(404).json({ message: 'book_not_found' });
 		}
 
 		await Book.findByIdAndDelete(id);
 
-		return res.status(200).json({ message: 'Book deleted successfully.' });
+		return res.status(200).json({ data: book });
 	} catch (error) {
 		console.error('Error deleting book:', error);
-		return res.status(500).json({ message: 'Server error' });
+		return res.status(500).json({ message: 'server_error' });
 	}
 };
 
