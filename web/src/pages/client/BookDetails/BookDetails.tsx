@@ -1,6 +1,6 @@
-import { Alert, Breadcrumbs, Button, CardMedia, Divider, Grid, Stack, Typography } from '@mui/material';
+import { Breadcrumbs, Button, CardMedia, Divider, Grid, Stack, Typography } from '@mui/material';
 import { red } from '@mui/material/colors';
-import { useParams } from 'react-router-dom';
+import { Navigate, useParams } from 'react-router-dom';
 import { LinkRouter, Loading } from '../../../components';
 import { useGetBookById } from '../../../services/book.service';
 import { Reviews } from './Reviews';
@@ -12,10 +12,10 @@ export function BookDetails() {
 
 	if (isPending) return <Loading />;
 
-	if (isError) return <Alert severity='error'>An error occurred.</Alert>;
+	if (isError) return <Navigate to='/error' replace />;
 
 	if (isSuccess && !data) {
-		return <Alert severity='warning'>Book not found.</Alert>;
+		return <Navigate to='/page-not-found' replace />;
 	}
 
 	if (isSuccess && data) {

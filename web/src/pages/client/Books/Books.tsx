@@ -1,5 +1,6 @@
 import { Alert, Breadcrumbs, Grid, Stack, Typography } from '@mui/material';
 import { useState } from 'react';
+import { Navigate } from 'react-router-dom';
 import { LinkRouter, Loading, MuiPagination } from '../../../components';
 import { useGetBooks } from '../../../services/book.service';
 import { BookCard } from './BookCard';
@@ -12,7 +13,7 @@ export function Books() {
 
 	if (isPending) return <Loading />;
 
-	if (isError) return <Alert severity='error'>An error occurred.</Alert>;
+	if (isError) return <Navigate to='/error' replace />;
 
 	if (isSuccess && !data) {
 		return <Alert severity='info'>No books found.</Alert>;
