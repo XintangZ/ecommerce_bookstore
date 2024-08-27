@@ -1,1 +1,5 @@
-// export * from './example.type';
+export * from './auth.type';
+export * from './book.type';
+export * from './category.type';
+export * from './review.type';
+export * from './user.type';

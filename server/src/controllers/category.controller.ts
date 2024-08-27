@@ -8,7 +8,7 @@ import { createCategorySchema } from '../schema';
 const createCategory = async (req: Request, res: Response) => {
 	const { user: { isAdmin = false } = {} } = res.locals;
 	if (!isAdmin) {
-		return res.status(403).json({ message: 'You are not authorized to perform this action.' });
+		return res.status(403).json({ message: 'unauthorized_action' });
 	}
 
 	try {
@@ -24,7 +24,7 @@ const createCategory = async (req: Request, res: Response) => {
 		}
 
 		console.error('Error creating category:', error);
-		return res.status(500).json({ message: 'Server error' });
+		return res.status(500).json({ message: 'server_error' });
 	}
 };
 
@@ -36,7 +36,7 @@ const getAllCategories = async (req: Request, res: Response) => {
 		return res.status(200).json({ data: categories });
 	} catch (error) {
 		console.error('Error retrieving categories:', error);
-		return res.status(500).json({ message: 'Server error' });
+		return res.status(500).json({ message: 'server_error' });
 	}
 };
 
@@ -45,20 +45,20 @@ const getCategory = async (req: Request, res: Response) => {
 	const { id } = req.params;
 
 	if (!mongoose.Types.ObjectId.isValid(id)) {
-		return res.status(400).json({ message: 'Invalid category ID format.' });
+		return res.status(400).json({ message: 'invalid_category_id' });
 	}
 
 	try {
 		const category = await Category.findById(id);
 
 		if (!category) {
-			return res.status(404).json({ message: `Category with id "${id}" not found.` });
+			return res.status(404).json({ message: 'category_not_found' });
 		}
 
 		return res.status(200).json({ data: category });
 	} catch (error) {
 		console.error('Error retrieving category:', error);
-		return res.status(500).json({ message: 'Server error' });
+		return res.status(500).json({ message: 'server_error' });
 	}
 };
 
@@ -66,27 +66,27 @@ const getCategory = async (req: Request, res: Response) => {
 const updateCategory = async (req: Request, res: Response) => {
 	const { user: { isAdmin = false } = {} } = res.locals;
 	if (!isAdmin) {
-		return res.status(403).json({ message: 'You are not authorized to perform this action.' });
+		return res.status(403).json({ message: 'unauthorized_action' });
 	}
 
-	const { id } = req.params;
+	const { id: categoryId } = req.params;
 	const updateData = req.body;
 
-	if (!mongoose.Types.ObjectId.isValid(id)) {
-		return res.status(400).json({ message: 'Invalid category ID format.' });
+	if (!mongoose.Types.ObjectId.isValid(categoryId)) {
+		return res.status(400).json({ message: 'invalid_category_id' });
 	}
 
 	try {
-		const category = await Category.findById(id);
+		const category = await Category.findById(categoryId);
 
 		if (!category) {
-			return res.status(404).json({ message: `Category with id "${id}" not found.` });
+			return res.status(404).json({ message: 'category_not_found' });
 		}
 
 		const validatedUpdateData = createCategorySchema.parse(updateData);
 
 		const updatedCategory = await Category.findByIdAndUpdate(
-			id,
+			categoryId,
 			{ $set: validatedUpdateData },
 			{ new: true, runValidators: true }
 		);
@@ -98,7 +98,7 @@ const updateCategory = async (req: Request, res: Response) => {
 		}
 
 		console.error('Error updating category:', error);
-		return res.status(500).json({ message: 'Server error' });
+		return res.status(500).json({ message: 'server_error' });
 	}
 };
 
@@ -106,28 +106,28 @@ const updateCategory = async (req: Request, res: Response) => {
 const deleteCategory = async (req: Request, res: Response) => {
 	const { user: { isAdmin = false } = {} } = res.locals;
 	if (!isAdmin) {
-		return res.status(403).json({ message: 'You are not authorized to perform this action.' });
+		return res.status(403).json({ message: 'unauthorized_action' });
 	}
 
-	const { id } = req.params;
+	const { id: categoryId } = req.params;
 
-	if (!mongoose.Types.ObjectId.isValid(id)) {
-		return res.status(400).json({ message: 'Invalid category ID format.' });
+	if (!mongoose.Types.ObjectId.isValid(categoryId)) {
+		return res.status(400).json({ message: 'invalid_category_id' });
 	}
 
 	try {
-		const category = await Category.findById(id);
+		const category = await Category.findById(categoryId);
 
 		if (!category) {
-			return res.status(404).json({ message: `Category with id "${id}" not found.` });
+			return res.status(404).json({ message: 'category_not_found' });
 		}
 
-		await Category.findByIdAndDelete(id);
+		await Category.findByIdAndDelete(categoryId);
 
-		return res.status(200).json({ message: 'Category deleted successfully.' });
+		return res.status(200).json({ data: category });
 	} catch (error) {
 		console.error('Error deleting category:', error);
-		return res.status(500).json({ message: 'Server error' });
+		return res.status(500).json({ message: 'server_error' });
 	}
 };
 

@@ -15,7 +15,7 @@ interface Order extends Document {
         street: string;
         city: string;
         province: string;
-        zipCode: string;
+        postalCode: string;
         phone: string; 
     };
     status: string;
@@ -41,7 +41,7 @@ const orderSchema = new Schema<Order>({
         street: { type: String, required: true },
         city: { type: String, required: true },
         province: { type: String, required: true },
-        zipCode: { type: String, required: true },
+        postalCode: { type: String, required: true },
         phone: { 
             type: String, 
             required: true,

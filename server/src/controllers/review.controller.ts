@@ -10,14 +10,22 @@ const createReview = async (req: Request, res: Response) => {
 		const { bookId } = req.params;
 		const userId = res.locals.user.userId;
 
-		const bookExists = await Book.exists({ _id: bookId });
-		const userExists = await User.exists({ _id: userId });
-
-		if (!bookExists) {
-			return res.status(404).json({ message: 'Book not found.' });
+		if (!mongoose.Types.ObjectId.isValid(userId)) {
+			return res.status(400).json({ message: 'invalid_user_id' });
 		}
+
+		if (!mongoose.Types.ObjectId.isValid(bookId)) {
+			return res.status(400).json({ message: 'invalid_book_id' });
+		}
+
+		const bookExists = await Book.exists({ _id: bookId });
+		if (!bookExists) {
+			return res.status(404).json({ message: 'book_not_found' });
+		}
+
+		const userExists = await User.exists({ _id: userId });
 		if (!userExists) {
-			return res.status(404).json({ message: 'User not found.' });
+			return res.status(404).json({ message: 'user_not_found' });
 		}
 
 		const validatedData = createReviewSchema.parse(req.body);
@@ -32,7 +40,7 @@ const createReview = async (req: Request, res: Response) => {
 		}
 
 		console.error('Error creating review:', error);
-		return res.status(500).json({ message: 'Server error' });
+		return res.status(500).json({ message: 'server_error' });
 	}
 };
 
@@ -41,16 +49,49 @@ const getReviewsByBook = async (req: Request, res: Response) => {
 	const { bookId } = req.params;
 
 	if (!mongoose.Types.ObjectId.isValid(bookId)) {
-		return res.status(400).json({ message: 'Invalid book ID format.' });
+		return res.status(400).json({ message: 'invalid_book_id' });
 	}
 
 	try {
-		const reviews = await Review.find({ bookId }).populate('userId');
+		const { page = 1, limit = 10 } = req.query;
 
-		return res.status(200).json({ data: reviews });
+		// Convert pagination parameters to numbers
+		const pageNumber = parseInt(page as string, 10);
+		const limitNumber = parseInt(limit as string, 10);
+
+		// Validate pagination parameters
+		if (isNaN(pageNumber) || pageNumber < 1) {
+			return res.status(400).json({ message: 'invalid_page_number' });
+		}
+		if (isNaN(limitNumber) || limitNumber < 1) {
+			return res.status(400).json({ message: 'invalid_limit_value' });
+		}
+
+		// Find reviews with pagination
+		const reviews = await Review.find({ bookId })
+			.skip((pageNumber - 1) * limitNumber)
+			.limit(limitNumber)
+			.populate('userId')
+			.exec();
+
+		// Get the total count of reviews for pagination metadata
+		const totalReviews = await Review.countDocuments().exec();
+
+		// Calculate total pages
+		const totalPages = Math.ceil(totalReviews / limitNumber);
+
+		return res.status(200).json({
+			data: reviews,
+			pagination: {
+				page: pageNumber,
+				limit: limitNumber,
+				totalPages: totalPages,
+				totalItems: totalReviews,
+			},
+		});
 	} catch (error) {
 		console.error('Error retrieving reviews:', error);
-		return res.status(500).json({ message: 'Server error' });
+		return res.status(500).json({ message: 'server_error' });
 	}
 };
 
@@ -58,47 +99,77 @@ const getReviewsByBook = async (req: Request, res: Response) => {
 const getReviewsByUser = async (req: Request, res: Response) => {
 	const userId = res.locals.user.userId;
 
-	if (!userId) {
-		return res.status(400).json({ message: 'User ID not found in token' });
+	if (!mongoose.Types.ObjectId.isValid(userId)) {
+		return res.status(400).json({ message: 'invalid_user_id' });
 	}
 
-	if (!mongoose.Types.ObjectId.isValid(userId)) {
-		return res.status(400).json({ message: 'Invalid user ID format.' });
+	const userExists = await User.exists({ _id: userId });
+	if (!userExists) {
+		return res.status(404).json({ message: 'user_not_found' });
 	}
 
 	try {
-		const reviews = await Review.find({ userId });
+		const { page = 1, limit = 10 } = req.query;
 
-		if (reviews.length === 0) {
-			return res.status(404).json({ message: `No reviews found for user with id "${userId}".` });
+		// Convert pagination parameters to numbers
+		const pageNumber = parseInt(page as string, 10);
+		const limitNumber = parseInt(limit as string, 10);
+
+		// Validate pagination parameters
+		if (isNaN(pageNumber) || pageNumber < 1) {
+			return res.status(400).json({ message: 'invalid_page_number' });
+		}
+		if (isNaN(limitNumber) || limitNumber < 1) {
+			return res.status(400).json({ message: 'invalid_limit_value' });
 		}
 
-		return res.status(200).json({ data: reviews });
+		// Find reviews with pagination
+		const reviews = await Review.find({ userId })
+			.skip((pageNumber - 1) * limitNumber)
+			.limit(limitNumber)
+			.populate('userId')
+			.exec();
+
+		// Get the total count of reviews for pagination metadata
+		const totalReviews = await Review.countDocuments().exec();
+
+		// Calculate total pages
+		const totalPages = Math.ceil(totalReviews / limitNumber);
+
+		return res.status(200).json({
+			data: reviews,
+			pagination: {
+				page: pageNumber,
+				limit: limitNumber,
+				totalPages: totalPages,
+				totalItems: totalReviews,
+			},
+		});
 	} catch (error) {
 		console.error('Error retrieving reviews:', error);
-		return res.status(500).json({ message: 'Server error' });
+		return res.status(500).json({ message: 'server_error' });
 	}
 };
 
 // Get a review by ID
 const getReviewById = async (req: Request, res: Response) => {
-	const { id } = req.params;
+	const { id: reviewId } = req.params;
 
-	if (!mongoose.Types.ObjectId.isValid(id)) {
-		return res.status(400).json({ message: 'Invalid review ID format.' });
+	if (!mongoose.Types.ObjectId.isValid(reviewId)) {
+		return res.status(400).json({ message: 'invalid_review_id' });
 	}
 
 	try {
-		const review = await Review.findById(id).populate('userId');
+		const review = await Review.findById(reviewId).populate('userId');
 
 		if (!review) {
-			return res.status(404).json({ message: `Review with id "${id}" not found.` });
+			return res.status(404).json({ message: 'review_not_found' });
 		}
 
 		return res.status(200).json({ data: review });
 	} catch (error) {
 		console.error('Error retrieving review:', error);
-		return res.status(500).json({ message: 'Server error' });
+		return res.status(500).json({ message: 'server_error' });
 	}
 };
 
@@ -109,19 +180,23 @@ const updateReview = async (req: Request, res: Response) => {
 	const updateData = req.body;
 
 	if (!mongoose.Types.ObjectId.isValid(reviewId)) {
-		return res.status(400).json({ message: 'Invalid review ID format.' });
+		return res.status(400).json({ message: 'invalid_review_id' });
+	}
+
+	if (!mongoose.Types.ObjectId.isValid(userId)) {
+		return res.status(400).json({ message: 'invalid_user_id' });
 	}
 
 	try {
 		const review = await Review.findById(reviewId);
 
 		if (!review) {
-			return res.status(404).json({ message: `Review with id "${reviewId}" not found.` });
+			return res.status(404).json({ message: 'review_not_found' });
 		}
 
 		// Check if the authenticated user is the owner of the review
 		if (review.userId.toString() !== userId) {
-			return res.status(403).json({ message: 'Forbidden: You can only update your own reviews.' });
+			return res.status(403).json({ message: 'unauthorized_action' });
 		}
 
 		const validatedUpdateData = updateReviewSchema.parse(updateData);
@@ -139,7 +214,7 @@ const updateReview = async (req: Request, res: Response) => {
 		}
 
 		console.error('Error updating review:', error);
-		return res.status(500).json({ message: 'Server error' });
+		return res.status(500).json({ message: 'server_error' });
 	}
 };
 
@@ -149,26 +224,30 @@ const deleteReview = async (req: Request, res: Response) => {
 	const userId = res.locals.user.userId;
 
 	if (!mongoose.Types.ObjectId.isValid(reviewId)) {
-		return res.status(400).json({ message: 'Invalid review ID format.' });
+		return res.status(400).json({ message: 'invalid_review_id' });
+	}
+
+	if (!mongoose.Types.ObjectId.isValid(userId)) {
+		return res.status(400).json({ message: 'invalid_user_id' });
 	}
 
 	try {
 		const review = await Review.findById(reviewId);
 
 		if (!review) {
-			return res.status(404).json({ message: `Review with id "${reviewId}" not found.` });
+			return res.status(404).json({ message: 'review_not_found' });
 		}
 
 		if (review.userId.toString() !== userId) {
-			return res.status(403).json({ message: 'Forbidden: You can only delete your own reviews.' });
+			return res.status(403).json({ message: 'unauthorized_action' });
 		}
 
 		await Review.findByIdAndDelete(reviewId);
 
-		return res.status(200).json({ message: 'Review deleted successfully.' });
+		return res.status(200).json({ data: review });
 	} catch (error) {
 		console.error('Error deleting review:', error);
-		return res.status(500).json({ message: 'Server error' });
+		return res.status(500).json({ message: 'server_error' });
 	}
 };
 

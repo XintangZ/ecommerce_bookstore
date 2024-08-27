@@ -7,7 +7,7 @@ export interface IUser extends Document {
     address: {
         street: string;
         city: string;
-        zipCode: string;
+        postalCode: string;
         country: string;
     };
     wishlist: string[];
@@ -21,7 +21,7 @@ const userSchema = new Schema<IUser>({
     address: {
         street: { type: String },
         city: { type: String },
-        zipCode: { type: String },
+        postalCode: { type: String },
         country: { type: String },
     },
     wishlist: [{ type: Schema.Types.ObjectId, ref: 'Book' }],

@@ -63,12 +63,16 @@ const getAllBooks = async (req: Request, res: Response) => {
 		// Get the total count of books for pagination metadata
 		const totalBooks = await Book.countDocuments().exec();
 
+		// Calculate total pages
+		const totalPages = Math.ceil(totalBooks / limitNumber);
+
 		return res.status(200).json({
 			data: books,
 			pagination: {
 				page: pageNumber,
 				limit: limitNumber,
-				totalBooks,
+				totalPages: totalPages,
+				totalItems: totalBooks,
 			},
 		});
 	} catch (error) {
@@ -87,8 +91,7 @@ const getBookById = async (req: Request, res: Response) => {
 	}
 
 	try {
-		const book = await Book.findById(id);
-
+		const book = await Book.findById(id).populate('categoryId');
 		if (!book) {
 			return res.status(404).json({ message: 'book_not_found' });
 		}
