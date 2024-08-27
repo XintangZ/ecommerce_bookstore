@@ -22,6 +22,7 @@ import {
 	useTheme,
 } from '@mui/material';
 import * as React from 'react';
+import { useNavigate } from 'react-router-dom';
 
 const drawerWidth = 240;
 const navItems = [
@@ -33,6 +34,7 @@ const settings = ['Profile', 'Account', 'Dashboard', 'Logout'];
 export function Nav() {
 	const [mobileOpen, setMobileOpen] = React.useState(false);
 	const theme = useTheme();
+	const navigate = useNavigate();
 
 	const [anchorElUser, setAnchorElUser] = React.useState<null | HTMLElement>(null);
 
@@ -54,7 +56,7 @@ export function Nav() {
 			<List>
 				{navItems.map((item, index) => (
 					<ListItem key={index} disablePadding>
-						<ListItemButton sx={{ textAlign: 'center' }} onClick={() => (window.location.href = item.uri)}>
+						<ListItemButton sx={{ textAlign: 'center' }} onClick={() => navigate(item.uri)}>
 							<ListItemText primary={item.page} />
 						</ListItemButton>
 					</ListItem>
@@ -79,17 +81,14 @@ export function Nav() {
 
 					<Typography
 						variant='h6'
-						onClick={() => (window.location.href = '/')}
+						onClick={() => navigate('/')}
 						sx={{ mr: 2, flexGrow: { xs: 1, sm: 0 }, cursor: 'pointer' }}>
 						BookStore
 					</Typography>
 
 					<Box sx={{ display: { xs: 'none', sm: 'block' }, flexGrow: 1 }}>
 						{navItems.map((item, index) => (
-							<Button
-								key={index}
-								sx={{ color: '#fff' }}
-								onClick={() => (window.location.href = item.uri)}>
+							<Button key={index} sx={{ color: '#fff' }} onClick={() => navigate(item.uri)}>
 								{item.page}
 							</Button>
 						))}

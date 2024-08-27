@@ -1,8 +1,9 @@
-import { Alert, Breadcrumbs, Button, CardMedia, Divider, Grid, Link, Stack, Typography } from '@mui/material';
+import { Alert, Breadcrumbs, Button, CardMedia, Divider, Grid, Stack, Typography } from '@mui/material';
 import { red } from '@mui/material/colors';
 import { useParams } from 'react-router-dom';
-import { Loading } from '../../../components';
+import { LinkRouter, Loading } from '../../../components';
 import { useGetBookById } from '../../../services/book.service';
+import { Reviews } from './Reviews';
 
 export function BookDetails() {
 	const { id: bookId = '' } = useParams<{ id: string }>();
@@ -23,12 +24,12 @@ export function BookDetails() {
 		return (
 			<Stack gap={2}>
 				<Breadcrumbs aria-label='breadcrumb'>
-					<Link underline='hover' color='inherit' href='/'>
+					<LinkRouter underline='hover' color='inherit' to='/'>
 						Home
-					</Link>
-					<Link underline='hover' color='inherit' href='/books'>
+					</LinkRouter>
+					<LinkRouter underline='hover' color='inherit' to='/books'>
 						Books
-					</Link>
+					</LinkRouter>
 					<Typography color='text.primary'>{book.title}</Typography>
 				</Breadcrumbs>
 
@@ -67,25 +68,25 @@ export function BookDetails() {
 				<Typography variant='h6'>Book Details</Typography>
 				<Stack gap={1} pl={2}>
 					<Typography variant='body2' color='text.secondary'>
-						Author: {book.author}
+						<b>Author:</b> {book.author}
 					</Typography>
 					<Typography variant='body2' color='text.secondary'>
-						ISBN: {book.isbn}
+						<b>ISBN:</b> {book.isbn}
 					</Typography>
 					<Typography variant='body2' color='text.secondary'>
-						Category: {book.categoryId.name}
+						<b>Category:</b> {book.categoryId.name}
 					</Typography>
 					{book.publishedDate && (
 						<Typography variant='body2' color='text.secondary'>
-							Published Date: {new Date(book.publishedDate).toLocaleDateString()}
+							<b>Date Published:</b> {new Date(book.publishedDate).toLocaleDateString()}
 						</Typography>
 					)}
 				</Stack>
 
 				<Divider />
 				<Typography variant='h6'>Reviews</Typography>
-				<Stack gap={1} pl={2}>
-					reviews
+				<Stack gap={1} pl={1}>
+					<Reviews bookId={book._id} />
 				</Stack>
 			</Stack>
 		);

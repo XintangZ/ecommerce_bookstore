@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { createBookSchema } from '../../../server/src/schema/book.schema';
+import { createBookSchema } from '../../../server/src/schema';
 import { CategoryT } from './category.type';
 import { PaginationT } from './common.type';
 

@@ -14,7 +14,6 @@ export function MuiPagination({ count, page, setPage, ...props }: Props) {
 
 	return (
 		<Pagination
-			{...props}
 			count={count}
 			shape='rounded'
 			color='primary'
@@ -22,6 +21,7 @@ export function MuiPagination({ count, page, setPage, ...props }: Props) {
 			showLastButton
 			page={page}
 			onChange={handleChange}
+			{...props}
 		/>
 	);
 }

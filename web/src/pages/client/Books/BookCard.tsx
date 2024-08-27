@@ -1,6 +1,7 @@
-import { Button, Card, CardActionArea, CardContent, CardMedia, Link, Typography } from '@mui/material';
+import { Button, Card, CardContent, CardMedia, Typography } from '@mui/material';
 import { red } from '@mui/material/colors';
 import { useMemo } from 'react';
+import { LinkRouter } from '../../../components';
 import { BookT } from '../../../types';
 
 type PropsT = {
@@ -12,13 +13,13 @@ export function BookCard({ book }: PropsT) {
 
 	return (
 		<Card sx={{ height: '100%' }} variant='outlined'>
-			<CardActionArea href={bookDetailUri}>
+			<LinkRouter to={bookDetailUri}>
 				{book.coverImage && <CardMedia component='img' height='140' image={book.coverImage} alt={book.title} />}
-			</CardActionArea>
+			</LinkRouter>
 			<CardContent>
-				<Link variant='h5' noWrap underline='hover' href={bookDetailUri}>
+				<LinkRouter variant='h5' noWrap underline='hover' to={bookDetailUri}>
 					{book.title}
-				</Link>
+				</LinkRouter>
 				<Typography variant='subtitle1' color='text.secondary' noWrap>
 					{book.author}
 				</Typography>
