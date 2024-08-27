@@ -37,8 +37,7 @@ const createUserAndCart = async (req: Request, res: Response) => {
 
     const savedCart = await newCart.save();
 
-    // Return the created user and cart
-    return res.status(201).json({ user: savedUser, cart: savedCart });
+    return res.status(201).json({ message: 'User created successfully' });
   } catch (error) {
     if (error instanceof z.ZodError) {
       // Zod validation errors
@@ -86,6 +85,10 @@ const login = async (req: Request, res: Response, next: NextFunction) => {
     return res.status(200).json({
       message: 'Login successful',
       token: token,
+      user: {
+        username: existingUser.name,
+        isAdmin: existingUser.isAdmin,
+      },
     });
 
   } catch (error) {
@@ -101,7 +104,7 @@ const getUser = async (req: Request, res: Response) => {
     const existingUser = await User.findById(userId);
 
     if (!existingUser) {
-      return res.status(404).json({ message: `User with id "${userId}" not found.` });
+      return res.status(404).json({ message: `User not found.` });
     }
 
     const userData = {
@@ -127,11 +130,16 @@ const updateUser = async (req: Request, res: Response) => {
 		return res.status(400).json({ message: 'Invalid user ID format.' });
 	}
 
+  const existingUser = await User.findOne({ email: updateData.email });
+  if (existingUser) {
+    return res.status(400).json({ message: 'User with this email already exists.' });
+  }
+
 	try {
 		const existingUser = await User.findById(id);
 
 		if (!existingUser) {
-			return res.status(404).json({ message: `User with id "${id}" not found.` });
+			return res.status(404).json({ message: `User not found.` });
 		}
 
 		const updatedUser = await User.findByIdAndUpdate(id, { $set: updateData }, { new: true, runValidators: true });
@@ -155,7 +163,7 @@ const updateWishlist = async (req: Request, res: Response) => {
 		const existingUser = await User.findById(id);
 
 		if (!existingUser) {
-			return res.status(404).json({ message: `User with id "${id}" not found.` });
+			return res.status(404).json({ message: `User not found.` });
 		}
 
     if (updateData.wishlist !== undefined) {
@@ -184,7 +192,7 @@ const deleteUser = async (req: Request, res: Response) => {
 		const existingUser = await User.findById(id);
 
 		if (!existingUser) {
-			return res.status(404).json({ message: `User with id "${id}" not found.` });
+			return res.status(404).json({ message: `User not found.` });
 		}
 
     await Cart.findOneAndDelete({ userId: id });
