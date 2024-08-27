@@ -1,4 +1,4 @@
-import { ReactNode, createContext, useContext, useEffect, useState } from 'react';
+import { ReactNode, createContext, useContext, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { LoginResT } from '../types';
 
@@ -15,20 +15,19 @@ interface AuthProviderPropsI {
 }
 
 const AuthProvider = ({ children }: AuthProviderPropsI) => {
-	const [auth, setAuth] = useState<LoginResT | null>(null);
+	const token = localStorage.getItem('token');
+	const user = localStorage.getItem('user');
+
+	let currAuth = null;
+	if (token && user) {
+		currAuth = {
+			user: JSON.parse(user),
+			token,
+		};
+	}
+
+	const [auth, setAuth] = useState<LoginResT | null>(currAuth);
 	const navigate = useNavigate();
-
-	useEffect(() => {
-		const token = localStorage.getItem('token');
-		const user = localStorage.getItem('user');
-
-		if (user && token) {
-			setAuth({
-				user: JSON.parse(user),
-				token,
-			});
-		}
-	}, []);
 
 	const login = (loginRes: LoginResT) => {
 		setAuth(loginRes);
