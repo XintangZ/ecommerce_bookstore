@@ -2,7 +2,9 @@ import { Navigate, Route, Routes } from 'react-router-dom';
 import { Redirect } from '../components/common/Redirect';
 import { MainLayout } from '../layouts';
 import { Home } from '../pages/Home';
+import { Login } from '../pages/auth';
 import { BookDetails, Books } from '../pages/client';
+import { ProtectedRoute } from './ProtectedRoute';
 
 function AppRoutes() {
 	return (
@@ -14,6 +16,21 @@ function AppRoutes() {
 					<Route index element={<Books />} />
 					<Route path=':id' element={<BookDetails />} />
 				</Route>
+
+				<Route path='admin' element={<ProtectedRoute isAdminOnly={true} />}>
+					<Route index element={<Home />} />
+				</Route>
+
+				<Route
+					path='unauthorized'
+					element={
+						<Redirect
+							msgType='warning'
+							title='Access denied'
+							msg='You do not have permission to view this page.'
+						/>
+					}
+				/>
 
 				<Route
 					path='error'
@@ -30,23 +47,21 @@ function AppRoutes() {
 					path='page-not-found'
 					element={
 						<Redirect
-							msgType='error'
-							title='Page Not Found'
+							msgType='info'
+							title='Page not found'
 							msg='The page you are looking for is not found.'
 						/>
 					}
 				/>
-				<Route path='*' element={<Navigate to='/page-not-found' replace />} />
 			</Route>
 
-			{/* <Route path='login' element={<Login />} /> */}
+			<Route path='login' element={<Login />} />
 
 			{/* <Route path='register'>
 				<Route index element={<Register />} />
 			</Route> */}
 
-			{/* <Route path='page-not-found' element={<NotFound />} /> */}
-			{/* <Route path='*' element={<Navigate to='/page-not-found' replace />} /> */}
+			<Route path='*' element={<Navigate to='/page-not-found' replace />} />
 		</Routes>
 	);
 }

@@ -23,18 +23,19 @@ import {
 } from '@mui/material';
 import * as React from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../contexts';
 
 const drawerWidth = 240;
 const navItems = [
 	{ page: 'Home', uri: '/' },
 	{ page: 'Books', uri: '/books' },
 ];
-const settings = ['Profile', 'Account', 'Dashboard', 'Logout'];
 
 export function Nav() {
 	const [mobileOpen, setMobileOpen] = React.useState(false);
 	const theme = useTheme();
 	const navigate = useNavigate();
+	const { auth, logout } = useAuth();
 
 	const [anchorElUser, setAnchorElUser] = React.useState<null | HTMLElement>(null);
 
@@ -95,17 +96,22 @@ export function Nav() {
 					</Box>
 
 					<Stack sx={{ flexGrow: 0, flexDirection: 'row', gap: 2 }}>
-						<IconButton size='large' aria-label='show 4 new mails' color='inherit'>
-							<Badge badgeContent={4} color='error'>
+						<IconButton
+							size='large'
+							aria-label='show 4 new mails'
+							color='inherit'
+							onClick={() => navigate('/cart')}>
+							<Badge badgeContent={0} color='error'>
 								<ShoppingCartIcon />
 							</Badge>
 						</IconButton>
 
-						<Tooltip title='Open settings'>
+						<Tooltip title={auth?.user.username || 'Login'}>
 							<IconButton onClick={handleOpenUserMenu} sx={{ p: 0 }}>
-								<Avatar alt='Remy Sharp' src='/static/images/avatar/2.jpg' />
+								<Avatar alt={auth?.user.username} src='/static/images/avatar/2.jpg' />
 							</IconButton>
 						</Tooltip>
+
 						<Menu
 							sx={{ mt: '45px' }}
 							id='menu-appbar'
@@ -121,11 +127,35 @@ export function Nav() {
 							}}
 							open={Boolean(anchorElUser)}
 							onClose={handleCloseUserMenu}>
-							{settings.map(setting => (
-								<MenuItem key={setting} onClick={handleCloseUserMenu}>
-									<Typography textAlign='center'>{setting}</Typography>
-								</MenuItem>
-							))}
+							{auth && [
+								<MenuItem
+									key='dashboard'
+									onClick={() => {
+										handleCloseUserMenu();
+										navigate(auth.user.isAdmin ? '/admin' : '/user');
+									}}>
+									<Typography textAlign='center'>Dashboard</Typography>
+								</MenuItem>,
+								<MenuItem
+									key='logout'
+									onClick={() => {
+										handleCloseUserMenu();
+										logout();
+									}}>
+									<Typography textAlign='center'>Logout</Typography>
+								</MenuItem>,
+							]}
+
+							{!auth && [
+								<MenuItem
+									key='login'
+									onClick={() => {
+										handleCloseUserMenu();
+										navigate('/login');
+									}}>
+									<Typography textAlign='center'>Login</Typography>
+								</MenuItem>,
+							]}
 						</Menu>
 					</Stack>
 				</Toolbar>
