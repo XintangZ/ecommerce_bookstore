@@ -1,7 +1,7 @@
 import { zodResolver } from '@hookform/resolvers/zod';
-import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
-import { Avatar, Box, Button, Container, CssBaseline, TextField, Typography } from '@mui/material';
+import { Box, Button, Container, CssBaseline, Divider, Stack, TextField, Typography } from '@mui/material';
 import { SubmitHandler, useForm } from 'react-hook-form';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../../contexts';
 import { LoginReqSchema } from '../../../schemas';
 import { useLogin } from '../../../services';
@@ -14,8 +14,10 @@ export function Login() {
 		formState: { errors },
 	} = useForm<LoginReqT>({
 		resolver: zodResolver(LoginReqSchema),
+		mode: 'onChange',
 	});
 
+	const navigate = useNavigate();
 	const { login } = useAuth();
 	const loginMutation = useLogin();
 
@@ -40,11 +42,15 @@ export function Login() {
 					flexDirection: 'column',
 					alignItems: 'center',
 				}}>
-				<Avatar sx={{ m: 1, bgcolor: 'secondary.main' }}>
-					<LockOutlinedIcon />
-				</Avatar>
+				<Typography
+					variant='h4'
+					onClick={() => navigate('/')}
+					sx={{ mb: 2, cursor: 'pointer', textAlign: 'center', color: 'primary.main', fontWeight: 'bold' }}>
+					BookStore
+				</Typography>
+
 				<Typography component='h1' variant='h5'>
-					Sign in
+					Login
 				</Typography>
 				<Box component='form' onSubmit={handleSubmit(onSubmit)} noValidate sx={{ mt: 1 }}>
 					<TextField
@@ -71,9 +77,22 @@ export function Login() {
 						error={!!errors.password}
 						helperText={errors.password?.message}
 					/>
-					<Button type='submit' fullWidth variant='contained' sx={{ mt: 3, mb: 2 }}>
-						Sign In
-					</Button>
+
+					<Stack gap={2} my={4}>
+						<Button type='submit' fullWidth variant='contained'>
+							Login
+						</Button>
+
+						<Divider>
+							<Typography variant='body2' align='center' color='text.secondary'>
+								Don't have an account?
+							</Typography>
+						</Divider>
+
+						<Button fullWidth variant='outlined' onClick={() => navigate('/register')}>
+							Register
+						</Button>
+					</Stack>
 				</Box>
 			</Box>
 		</Container>

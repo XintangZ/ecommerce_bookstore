@@ -1,62 +1,53 @@
 import { zodResolver } from '@hookform/resolvers/zod';
-import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
-import { Avatar, Box, Button, Container, CssBaseline, TextField, Typography } from '@mui/material';
+import { Box, Button, Container, CssBaseline, Divider, Stack, TextField, Typography } from '@mui/material';
+import { AxiosError } from 'axios';
+import { useState } from 'react';
 import { SubmitHandler, useForm } from 'react-hook-form';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../../contexts';
 import { RegisterReqSchemaExt } from '../../../schemas';
-import { useRegister, useLogin } from '../../../services';
+import { useLogin, useRegister } from '../../../services';
 import { LoginResT, RegisterReqExt, RegisterReqT } from '../../../types';
-import { useState } from 'react';
-import { AxiosError } from 'axios';
 
 export function Register() {
-  const [backendError, setBackendError] = useState<string | null>(null);
+	const [backendError, setBackendError] = useState<string | null>(null);
 	const {
 		register,
 		handleSubmit,
 		formState: { errors },
-    watch,
 	} = useForm<RegisterReqExt>({
 		resolver: zodResolver(RegisterReqSchemaExt),
+		mode: 'onChange',
 	});
 
 	const navigate = useNavigate();
-	const { auth, login } = useAuth();
+	const { login } = useAuth();
 	const registerMutation = useRegister();
-  const loginMutation = useLogin();
+	const loginMutation = useLogin();
 
-	if (!!auth) navigate(-1);
+	const onSubmit: SubmitHandler<RegisterReqExt> = data => {
+		const { confirmPassword, ...registerData } = data;
 
-  const password = watch('password');
-
-  const onSubmit: SubmitHandler<RegisterReqExt> = (data) => {
-    const { confirmPassword, ...registerData } = data;
-  
-    registerMutation.mutate(registerData as RegisterReqT, {
-      onSuccess: () => {
-        // Login after successful registration
-        loginMutation.mutate(
-          { email: data.email, password: data.password },
-          {
-            onSuccess: (res: { data: LoginResT }) => {
-              login(res.data);
-            },
-          }
-        );
-      },
-      onError: error => {
-        // Check if the error is an instance of AxiosError
-        if (error instanceof AxiosError) {
-          // Access the response data from AxiosError
-          setBackendError(error.response?.data?.message || 'An error occurred');
-        } else {
-          // Handle other types of errors
-          setBackendError('An error occurred');
-        }     
-      },
-    });
-  };
+		registerMutation.mutate(registerData as RegisterReqT, {
+			onSuccess: () => {
+				// Login after successful registration
+				loginMutation.mutate(
+					{ email: data.email, password: data.password },
+					{ onSuccess: (res: { data: LoginResT }) => login(res.data) }
+				);
+			},
+			onError: error => {
+				// Check if the error is an instance of AxiosError
+				if (error instanceof AxiosError) {
+					// Access the response data from AxiosError
+					setBackendError(error.response?.data?.message || 'An error occurred');
+				} else {
+					// Handle other types of errors
+					setBackendError('An error occurred');
+				}
+			},
+		});
+	};
 
 	return (
 		<Container component='main' maxWidth='xs'>
@@ -68,18 +59,22 @@ export function Register() {
 					flexDirection: 'column',
 					alignItems: 'center',
 				}}>
-				<Avatar sx={{ m: 1, bgcolor: 'secondary.main' }}>
-					<LockOutlinedIcon />
-				</Avatar>
+				<Typography
+					variant='h4'
+					onClick={() => navigate('/')}
+					sx={{ mb: 2, cursor: 'pointer', textAlign: 'center', color: 'primary.main', fontWeight: 'bold' }}>
+					BookStore
+				</Typography>
+
 				<Typography component='h1' variant='h5'>
-					Sign up
+					Register
 				</Typography>
 				<Box component='form' onSubmit={handleSubmit(onSubmit)} noValidate sx={{ mt: 1 }}>
-          {backendError && (
-            <Typography color="error" variant="body2" align="center">
-              {backendError}
-            </Typography>
-          )}
+					{backendError && (
+						<Typography color='error' variant='body2' align='center'>
+							{backendError}
+						</Typography>
+					)}
 					<TextField
 						margin='normal'
 						required
@@ -123,15 +118,26 @@ export function Register() {
 						type='password'
 						id='confirm-password'
 						autoComplete='current-password'
-						{...register('confirmPassword', {
-							validate: value => value === password || 'Passwords do not match',
-						})}
+						{...register('confirmPassword')}
 						error={!!errors.confirmPassword}
 						helperText={errors.confirmPassword?.message}
 					/>
-					<Button type='submit' fullWidth variant='contained' sx={{ mt: 3, mb: 2 }}>
-						Sign Up
-					</Button>
+
+					<Stack gap={2} my={4}>
+						<Button type='submit' fullWidth variant='contained'>
+							Register
+						</Button>
+
+						<Divider>
+							<Typography variant='body2' align='center' color='text.secondary'>
+								Already have an account?
+							</Typography>
+						</Divider>
+
+						<Button fullWidth variant='outlined' onClick={() => navigate('/login')}>
+							Login
+						</Button>
+					</Stack>
 				</Box>
 			</Box>
 		</Container>
