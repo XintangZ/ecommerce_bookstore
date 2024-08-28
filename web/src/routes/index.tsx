@@ -8,6 +8,7 @@ import { Login } from '../pages/auth';
 import { BookDetails, Books, Home } from '../pages/client';
 import { GuestRoute } from './GuestRoute';
 import { ProtectedRoute } from './ProtectedRoute';
+import { Register } from '../pages/auth/Register/Register';
 
 function AppRoutes() {
 	return (
@@ -65,7 +66,7 @@ function AppRoutes() {
 
 			<Route path='/' element={<GuestRoute />}>
 				<Route path='login' element={<Login />} />
-				{/* <Route path='register' element={<Register />} /> */}
+				<Route path='register' element={<Register />} />
 			</Route>
 
 			<Route path='*' element={<Navigate to='/page-not-found' replace />} />
