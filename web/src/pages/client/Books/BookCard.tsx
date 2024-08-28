@@ -14,7 +14,13 @@ export function BookCard({ book }: PropsT) {
 	return (
 		<Card sx={{ height: '100%' }} variant='outlined'>
 			<LinkRouter to={bookDetailUri}>
-				{book.coverImage && <CardMedia component='img' height='140' image={book.coverImage} alt={book.title} />}
+				<CardMedia
+					component='img'
+					height='160'
+					sx={{ pt: 2, objectFit: 'contain' }}
+					image={book.coverImage || 'http://lgimages.s3.amazonaws.com/nc-md.gif'}
+					alt={book.title}
+				/>
 			</LinkRouter>
 			<CardContent>
 				<LinkRouter variant='h5' noWrap underline='hover' to={bookDetailUri}>

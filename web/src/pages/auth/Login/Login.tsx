@@ -2,7 +2,6 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 import { Avatar, Box, Button, Container, CssBaseline, TextField, Typography } from '@mui/material';
 import { SubmitHandler, useForm } from 'react-hook-form';
-import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../../contexts';
 import { LoginReqSchema } from '../../../schemas';
 import { useLogin } from '../../../services';
@@ -17,11 +16,8 @@ export function Login() {
 		resolver: zodResolver(LoginReqSchema),
 	});
 
-	const navigate = useNavigate();
-	const { auth, login } = useAuth();
+	const { login } = useAuth();
 	const loginMutation = useLogin();
-
-	if (!!auth) navigate(-1);
 
 	const onSubmit: SubmitHandler<LoginReqT> = data => {
 		loginMutation.mutate(data, {

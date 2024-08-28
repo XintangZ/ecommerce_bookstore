@@ -38,7 +38,8 @@ export function BookDetails() {
 						<CardMedia
 							component='img'
 							height='300'
-							image={book.coverImage || 'https://via.placeholder.com/300x450'}
+							sx={{ p: 2, objectFit: 'contain' }}
+							image={book.coverImage || 'http://lgimages.s3.amazonaws.com/nc-md.gif'}
 							alt={book.title}
 						/>
 					</Grid>
