@@ -1,5 +1,6 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Box, Button, Grid, MenuItem, TextField } from '@mui/material';
+import { enqueueSnackbar } from 'notistack';
 import { SubmitHandler, useForm } from 'react-hook-form';
 import { useAuth } from '../../../contexts';
 import { CreateBookSchema } from '../../../schemas';
@@ -28,6 +29,7 @@ export function BookForm({ defaultValues }: PropsI) {
 		console.log('🚀 ~ BookForm ~ data:', data);
 		mutate(data, {
 			onSuccess: res => {
+				enqueueSnackbar('Book added', { variant: 'success' });
 				console.log('🚀 ~ BookForm ~ res:', res);
 			},
 			onError: err => {

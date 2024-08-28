@@ -1,5 +1,6 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Box, Button, Container, CssBaseline, Divider, Stack, TextField, Typography } from '@mui/material';
+import { enqueueSnackbar } from 'notistack';
 import { SubmitHandler, useForm } from 'react-hook-form';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../../contexts';
@@ -25,6 +26,7 @@ export function Login() {
 		loginMutation.mutate(data, {
 			onSuccess: res => {
 				login(res.data);
+				enqueueSnackbar(`Welcome, ${res.data.user.username}`, { variant: 'success', hideIconVariant: true });
 			},
 			onError: error => {
 				console.log(error);
