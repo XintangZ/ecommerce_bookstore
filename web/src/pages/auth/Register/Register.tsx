@@ -1,5 +1,5 @@
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Box, Button, Container, CssBaseline, Divider, Stack, TextField, Typography } from '@mui/material';
+import { Alert, Box, Button, Container, CssBaseline, Divider, Stack, TextField, Typography } from '@mui/material';
 import { AxiosError } from 'axios';
 import { enqueueSnackbar } from 'notistack';
 import { useState } from 'react';
@@ -80,10 +80,11 @@ export function Register() {
 				</Typography>
 				<Box component='form' onSubmit={handleSubmit(onSubmit)} noValidate sx={{ mt: 1 }}>
 					{backendError && (
-						<Typography color='error' variant='body2' align='center'>
+						<Alert severity='error' sx={{ my: 2 }}>
 							{backendError}
-						</Typography>
+						</Alert>
 					)}
+
 					<TextField
 						margin='normal'
 						required

@@ -1,6 +1,8 @@
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Box, Button, Container, CssBaseline, Divider, Stack, TextField, Typography } from '@mui/material';
+import { Alert, Box, Button, Container, CssBaseline, Divider, Stack, TextField, Typography } from '@mui/material';
+import { AxiosError } from 'axios';
 import { enqueueSnackbar } from 'notistack';
+import { useState } from 'react';
 import { SubmitHandler, useForm } from 'react-hook-form';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../../contexts';
@@ -9,6 +11,7 @@ import { useLogin } from '../../../services';
 import { LoginReqT } from '../../../types';
 
 export function Login() {
+	const [backendError, setBackendError] = useState<string | null>(null);
 	const {
 		register,
 		handleSubmit,
@@ -29,7 +32,14 @@ export function Login() {
 				enqueueSnackbar(`Welcome, ${res.data.user.username}`, { variant: 'success', hideIconVariant: true });
 			},
 			onError: error => {
-				console.log(error);
+				// Check if the error is an instance of AxiosError
+				if (error instanceof AxiosError) {
+					// Access the response data from AxiosError
+					setBackendError(error.response?.data?.message || 'An error occurred');
+				} else {
+					// Handle other types of errors
+					setBackendError('An error occurred');
+				}
 			},
 		});
 	};
@@ -55,6 +65,12 @@ export function Login() {
 					Login
 				</Typography>
 				<Box component='form' onSubmit={handleSubmit(onSubmit)} noValidate sx={{ mt: 1 }}>
+					{backendError && (
+						<Alert severity='error' sx={{ my: 2 }}>
+							{backendError}
+						</Alert>
+					)}
+
 					<TextField
 						margin='normal'
 						required
