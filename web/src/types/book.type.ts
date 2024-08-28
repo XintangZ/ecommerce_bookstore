@@ -1,11 +1,11 @@
 import { z } from 'zod';
-import { createBookSchema } from '../../../server/src/schema';
+import { CreateBookSchema } from '../schemas';
 import { CategoryT } from './category.type';
 import { PaginationT } from './common.type';
 
-export type createBookT = z.infer<typeof createBookSchema>;
+export type CreateBookT = z.infer<typeof CreateBookSchema>;
 
-export type BookT = createBookT & {
+export type BookT = CreateBookT & {
 	_id: string;
 };
 

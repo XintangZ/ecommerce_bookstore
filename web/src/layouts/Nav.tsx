@@ -26,16 +26,13 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts';
 
 const drawerWidth = 240;
-const navItems = [
-	{ page: 'Home', uri: '/' },
-	{ page: 'Books', uri: '/books' },
-];
 
 export function Nav() {
 	const [mobileOpen, setMobileOpen] = React.useState(false);
 	const theme = useTheme();
 	const navigate = useNavigate();
 	const { auth, logout } = useAuth();
+	const isAdmin = !!auth?.user.isAdmin;
 
 	const [anchorElUser, setAnchorElUser] = React.useState<null | HTMLElement>(null);
 
@@ -55,13 +52,17 @@ export function Nav() {
 		<Box onClick={handleDrawerToggle} sx={{ textAlign: 'center' }}>
 			<Toolbar />
 			<List>
-				{navItems.map((item, index) => (
-					<ListItem key={index} disablePadding>
-						<ListItemButton sx={{ textAlign: 'center' }} onClick={() => navigate(item.uri)}>
-							<ListItemText primary={item.page} />
-						</ListItemButton>
-					</ListItem>
-				))}
+				<ListItem disablePadding>
+					<ListItemButton sx={{ textAlign: 'center' }} onClick={() => navigate(isAdmin ? '/admin' : '/')}>
+						<ListItemText primary='Home' />
+					</ListItemButton>
+
+					<ListItemButton
+						sx={{ textAlign: 'center' }}
+						onClick={() => navigate(isAdmin ? '/admin/books' : '/books')}>
+						<ListItemText primary='Books' />
+					</ListItemButton>
+				</ListItem>
 			</List>
 		</Box>
 	);
@@ -88,30 +89,29 @@ export function Nav() {
 					</Typography>
 
 					<Box sx={{ display: { xs: 'none', sm: 'block' }, flexGrow: 1 }}>
-						{navItems.map((item, index) => (
-							<Button key={index} sx={{ color: '#fff' }} onClick={() => navigate(item.uri)}>
-								{item.page}
-							</Button>
-						))}
+						<Button sx={{ color: '#fff' }} onClick={() => navigate(isAdmin ? '/admin' : '/')}>
+							Home
+						</Button>
+
+						<Button sx={{ color: '#fff' }} onClick={() => navigate(isAdmin ? '/admin/books' : '/books')}>
+							Books
+						</Button>
 					</Box>
 
 					<Stack sx={{ flexGrow: 0, flexDirection: 'row', gap: 2 }}>
-						<IconButton
-							size='large'
-							aria-label='show 4 new mails'
-							color='inherit'
-							onClick={() => navigate('/cart')}>
-							<Badge badgeContent={0} color='error'>
-								<ShoppingCartIcon />
-							</Badge>
-						</IconButton>
+						{!isAdmin && (
+							<IconButton size='large' color='inherit' onClick={() => navigate('/cart')}>
+								<Badge badgeContent={0} color='error'>
+									<ShoppingCartIcon />
+								</Badge>
+							</IconButton>
+						)}
 
 						<Tooltip title={auth?.user.username || 'Login'}>
 							<IconButton onClick={handleOpenUserMenu} sx={{ p: 0 }}>
 								<Avatar alt={auth?.user.username} src='/static/images/avatar/2.jpg' />
 							</IconButton>
 						</Tooltip>
-
 						<Menu
 							sx={{ mt: '45px' }}
 							id='menu-appbar'
@@ -129,12 +129,12 @@ export function Nav() {
 							onClose={handleCloseUserMenu}>
 							{auth && [
 								<MenuItem
-									key='dashboard'
+									key='profile'
 									onClick={() => {
 										handleCloseUserMenu();
-										navigate(auth.user.isAdmin ? '/admin' : '/user');
+										navigate(auth.user.isAdmin ? '/admin/profile' : '/user/profile');
 									}}>
-									<Typography textAlign='center'>Dashboard</Typography>
+									<Typography textAlign='center'>Profile</Typography>
 								</MenuItem>,
 								<MenuItem
 									key='logout'

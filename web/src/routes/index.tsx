@@ -1,9 +1,12 @@
 import { Navigate, Route, Routes } from 'react-router-dom';
 import { Redirect } from '../components/common/Redirect';
 import { MainLayout } from '../layouts';
-import { Home } from '../pages/Home';
+import { AdminDashboard } from '../pages/admin';
+import { BookForm } from '../pages/admin/Books/BookForm';
+import { BookTable } from '../pages/admin/Books/BookTable';
 import { Login } from '../pages/auth';
-import { BookDetails, Books } from '../pages/client';
+import { BookDetails, Books, Home } from '../pages/client';
+import { GuestRoute } from './GuestRoute';
 import { ProtectedRoute } from './ProtectedRoute';
 
 function AppRoutes() {
@@ -18,7 +21,12 @@ function AppRoutes() {
 				</Route>
 
 				<Route path='admin' element={<ProtectedRoute isAdminOnly={true} />}>
-					<Route index element={<Home />} />
+					<Route index element={<AdminDashboard />} />
+
+					<Route path='books'>
+						<Route index element={<BookTable />} />
+						<Route path='create' element={<BookForm />} />
+					</Route>
 				</Route>
 
 				<Route
@@ -55,11 +63,10 @@ function AppRoutes() {
 				/>
 			</Route>
 
-			<Route path='login' element={<Login />} />
-
-			{/* <Route path='register'>
-				<Route index element={<Register />} />
-			</Route> */}
+			<Route path='/' element={<GuestRoute />}>
+				<Route path='login' element={<Login />} />
+				{/* <Route path='register' element={<Register />} /> */}
+			</Route>
 
 			<Route path='*' element={<Navigate to='/page-not-found' replace />} />
 		</Routes>
