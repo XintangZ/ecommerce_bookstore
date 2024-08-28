@@ -147,15 +147,24 @@ export function Nav() {
 							]}
 
 							{!auth && [
-								<MenuItem
-									key='login'
-									onClick={() => {
-										handleCloseUserMenu();
-										navigate('/login');
-									}}>
-									<Typography textAlign='center'>Login</Typography>
-								</MenuItem>,
+									<MenuItem
+											key='login'
+											onClick={() => {
+													handleCloseUserMenu();
+													navigate('/login');
+											}}>
+											<Typography textAlign='center'>Login</Typography>
+									</MenuItem>,
+									<MenuItem
+											key='register'
+											onClick={() => {
+													handleCloseUserMenu();
+													navigate('/register');
+											}}>
+											<Typography textAlign='center'>Register</Typography>
+									</MenuItem>
 							]}
+
 						</Menu>
 					</Stack>
 				</Toolbar>
