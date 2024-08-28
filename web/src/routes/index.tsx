@@ -5,6 +5,7 @@ import { Home } from '../pages/Home';
 import { Login } from '../pages/auth';
 import { BookDetails, Books } from '../pages/client';
 import { ProtectedRoute } from './ProtectedRoute';
+import { Register } from '../pages/auth/Register/Register';
 
 function AppRoutes() {
 	return (
@@ -56,6 +57,7 @@ function AppRoutes() {
 			</Route>
 
 			<Route path='login' element={<Login />} />
+			<Route path='register' element={<Register />} />
 
 			{/* <Route path='register'>
 				<Route index element={<Register />} />
