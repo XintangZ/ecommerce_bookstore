@@ -5,10 +5,10 @@ import { AdminDashboard } from '../pages/admin';
 import { BookForm } from '../pages/admin/Books/BookForm';
 import { BookTable } from '../pages/admin/Books/BookTable';
 import { Login } from '../pages/auth';
+import { Register } from '../pages/auth/Register/Register';
 import { BookDetails, Books, Home } from '../pages/client';
 import { GuestRoute } from './GuestRoute';
 import { ProtectedRoute } from './ProtectedRoute';
-import { Register } from '../pages/auth/Register/Register';
 
 function AppRoutes() {
 	return (
@@ -27,6 +27,7 @@ function AppRoutes() {
 					<Route path='books'>
 						<Route index element={<BookTable />} />
 						<Route path='create' element={<BookForm />} />
+						<Route path='edit/:id' element={<BookForm />} />
 					</Route>
 				</Route>
 

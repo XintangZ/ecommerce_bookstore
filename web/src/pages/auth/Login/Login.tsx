@@ -1,7 +1,6 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Alert, Box, Button, Container, CssBaseline, Divider, Stack, TextField, Typography } from '@mui/material';
 import { AxiosError } from 'axios';
-import { enqueueSnackbar } from 'notistack';
 import { useState } from 'react';
 import { SubmitHandler, useForm } from 'react-hook-form';
 import { useNavigate } from 'react-router-dom';
@@ -27,10 +26,7 @@ export function Login() {
 
 	const onSubmit: SubmitHandler<LoginReqT> = data => {
 		loginMutation.mutate(data, {
-			onSuccess: res => {
-				login(res.data);
-				enqueueSnackbar(`Welcome, ${res.data.user.username}`, { variant: 'success', hideIconVariant: true });
-			},
+			onSuccess: res => login(res.data),
 			onError: error => {
 				// Check if the error is an instance of AxiosError
 				if (error instanceof AxiosError) {

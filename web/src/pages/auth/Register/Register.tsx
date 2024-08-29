@@ -1,7 +1,6 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Alert, Box, Button, Container, CssBaseline, Divider, Stack, TextField, Typography } from '@mui/material';
 import { AxiosError } from 'axios';
-import { enqueueSnackbar } from 'notistack';
 import { useState } from 'react';
 import { SubmitHandler, useForm } from 'react-hook-form';
 import { useNavigate } from 'react-router-dom';
@@ -35,13 +34,7 @@ export function Register() {
 				loginMutation.mutate(
 					{ email: data.email, password: data.password },
 					{
-						onSuccess: (res: { data: LoginResT }) => {
-							login(res.data);
-							enqueueSnackbar(`Welcome, ${res.data.user.username}`, {
-								variant: 'success',
-								hideIconVariant: true,
-							});
-						},
+						onSuccess: (res: { data: LoginResT }) => login(res.data),
 					}
 				);
 			},

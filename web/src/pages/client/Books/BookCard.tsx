@@ -2,6 +2,7 @@ import { Button, Card, CardContent, CardMedia, Typography } from '@mui/material'
 import { red } from '@mui/material/colors';
 import { useMemo } from 'react';
 import { LinkRouter } from '../../../components';
+import { DEFAULT_COVER_IMG } from '../../../consts';
 import { BookT } from '../../../types';
 
 type PropsT = {
@@ -18,7 +19,7 @@ export function BookCard({ book }: PropsT) {
 					component='img'
 					height='160'
 					sx={{ pt: 2, objectFit: 'contain' }}
-					image={book.coverImage || 'http://lgimages.s3.amazonaws.com/nc-md.gif'}
+					image={book.coverImage || DEFAULT_COVER_IMG}
 					alt={book.title}
 				/>
 			</LinkRouter>

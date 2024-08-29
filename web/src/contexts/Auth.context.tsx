@@ -1,3 +1,4 @@
+import { enqueueSnackbar } from 'notistack';
 import { ReactNode, createContext, useContext, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { LoginResT } from '../types';
@@ -37,6 +38,11 @@ const AuthProvider = ({ children }: AuthProviderPropsI) => {
 		localStorage.setItem('user', JSON.stringify(user));
 
 		user.isAdmin ? navigate('/admin') : navigate(-1);
+
+		enqueueSnackbar(`Welcome, ${user.username}`, {
+			variant: 'success',
+			hideIconVariant: true,
+		});
 	};
 
 	const logout = () => {
@@ -44,6 +50,8 @@ const AuthProvider = ({ children }: AuthProviderPropsI) => {
 		localStorage.removeItem('token');
 		localStorage.removeItem('user');
 		navigate('/', { replace: true });
+
+		enqueueSnackbar('You are logged out', { variant: 'default' });
 	};
 
 	return <AuthContext.Provider value={{ auth, login, logout }}>{children}</AuthContext.Provider>;

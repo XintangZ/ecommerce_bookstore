@@ -1,5 +1,13 @@
 import { z } from 'zod';
 
+export const StockSchema = z
+	.string()
+	.min(1, { message: 'Stock is required' })
+	.transform(value => parseInt(value, 10))
+	.refine(value => !isNaN(value) && Number.isInteger(value) && value >= 0, {
+		message: 'Stock must be a non-negative integer',
+	});
+
 export const CreateBookSchema = z.object({
 	title: z.string().min(1, { message: 'Title is required' }),
 	author: z.string().min(1, { message: 'Author is required' }),
@@ -11,13 +19,7 @@ export const CreateBookSchema = z.object({
 		.transform(value => parseFloat(value))
 		.refine(value => !isNaN(value) && value > 0, { message: 'Price must be a positive number' }),
 	categoryId: z.string().min(1, { message: 'Category is required' }),
-	stock: z
-		.string()
-		.min(1, { message: 'Stock is required' })
-		.transform(value => parseInt(value, 10))
-		.refine(value => !isNaN(value) && Number.isInteger(value) && value >= 0, {
-			message: 'Stock must be a non-negative integer',
-		}),
+	stock: StockSchema,
 	publishedDate: z
 		.string()
 		.transform(value => new Date(value)) // Convert string to Date

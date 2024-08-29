@@ -2,6 +2,7 @@ import { Breadcrumbs, Button, CardMedia, Divider, Grid, Stack, Typography } from
 import { red } from '@mui/material/colors';
 import { Navigate, useParams } from 'react-router-dom';
 import { LinkRouter, Loading } from '../../../components';
+import { DEFAULT_COVER_IMG } from '../../../consts';
 import { useGetBookById } from '../../../services/book.service';
 import { Reviews } from './Reviews';
 
@@ -39,7 +40,7 @@ export function BookDetails() {
 							component='img'
 							height='300'
 							sx={{ p: 2, objectFit: 'contain' }}
-							image={book.coverImage || 'http://lgimages.s3.amazonaws.com/nc-md.gif'}
+							image={book.coverImage || DEFAULT_COVER_IMG}
 							alt={book.title}
 						/>
 					</Grid>
