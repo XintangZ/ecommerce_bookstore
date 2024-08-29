@@ -53,14 +53,16 @@ export function Nav() {
 			<Toolbar />
 			<List>
 				<ListItem disablePadding>
-					<ListItemButton sx={{ textAlign: 'center' }} onClick={() => navigate(isAdmin ? '/admin' : '/')}>
+					<ListItemButton sx={{ textAlign: 'center' }} onClick={() => navigate('/')}>
 						<ListItemText primary='Home' />
 					</ListItemButton>
 
-					<ListItemButton
-						sx={{ textAlign: 'center' }}
-						onClick={() => navigate(isAdmin ? '/admin/books' : '/books')}>
+					<ListItemButton sx={{ textAlign: 'center' }} onClick={() => navigate('/books')}>
 						<ListItemText primary='Books' />
+					</ListItemButton>
+
+					<ListItemButton sx={{ textAlign: 'center' }} onClick={() => navigate('/orders')}>
+						<ListItemText primary='Orders' />
 					</ListItemButton>
 				</ListItem>
 			</List>
@@ -89,22 +91,28 @@ export function Nav() {
 					</Typography>
 
 					<Box sx={{ display: { xs: 'none', sm: 'block' }, flexGrow: 1 }}>
-						<Button sx={{ color: '#fff' }} onClick={() => navigate(isAdmin ? '/admin' : '/')}>
+						<Button sx={{ color: '#fff' }} onClick={() => navigate('/')}>
 							Home
 						</Button>
 
-						<Button sx={{ color: '#fff' }} onClick={() => navigate(isAdmin ? '/admin/books' : '/books')}>
+						<Button sx={{ color: '#fff' }} onClick={() => navigate('/books')}>
 							Books
+						</Button>
+
+						<Button sx={{ color: '#fff' }} onClick={() => navigate('/orders')}>
+							Orders
 						</Button>
 					</Box>
 
 					<Stack sx={{ flexGrow: 0, flexDirection: 'row', gap: 2 }}>
 						{!isAdmin && (
-							<IconButton size='large' color='inherit' onClick={() => navigate('/cart')}>
-								<Badge badgeContent={0} color='error'>
-									<ShoppingCartIcon />
-								</Badge>
-							</IconButton>
+							<Tooltip title='Cart'>
+								<IconButton size='large' color='inherit' onClick={() => navigate('/cart')}>
+									<Badge badgeContent={0} color='error'>
+										<ShoppingCartIcon />
+									</Badge>
+								</IconButton>
+							</Tooltip>
 						)}
 
 						<Tooltip title={auth?.user.username || 'Login'}>
@@ -128,14 +136,14 @@ export function Nav() {
 							open={Boolean(anchorElUser)}
 							onClose={handleCloseUserMenu}>
 							{auth && [
-								<MenuItem
-									key='profile'
-									onClick={() => {
-										handleCloseUserMenu();
-										navigate(auth.user.isAdmin ? '/admin/profile' : '/user/profile');
-									}}>
-									<Typography textAlign='center'>Profile</Typography>
-								</MenuItem>,
+								// <MenuItem
+								// 	key='profile'
+								// 	onClick={() => {
+								// 		handleCloseUserMenu();
+								// 		navigate('/profile');
+								// 	}}>
+								// 	<Typography textAlign='center'>Profile</Typography>
+								// </MenuItem>,
 								<MenuItem
 									key='logout'
 									onClick={() => {

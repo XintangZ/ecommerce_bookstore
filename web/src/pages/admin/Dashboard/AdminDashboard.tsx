@@ -2,14 +2,19 @@ import { Alert, Button, Card, CardActions, CardContent, Grid, Stack, Typography 
 import { useNavigate } from 'react-router-dom';
 import { Loading } from '../../../components';
 import { LOW_STOCK_QTY } from '../../../consts';
-import { useGetBooks } from '../../../services';
+import { useAuth } from '../../../contexts';
+import { useGetAllOrders, useGetBooks } from '../../../services';
 
 export function AdminDashboard() {
+	const { auth } = useAuth();
 	const navigate = useNavigate();
 
 	const booksQuery = useGetBooks(1, 1);
 	const outOfStockQuery = useGetBooks(1, 1, { isAvailable: false });
 	const lowInStockQuery = useGetBooks(1, 1, { isAvailable: true, maxStock: LOW_STOCK_QTY });
+
+	const orderQuery = useGetAllOrders(auth?.token as string, 1, 1);
+	const pendingOrderQuery = useGetAllOrders(auth?.token as string, 1, 1, { status: 'Pending' });
 
 	const bookStats = () => {
 		if (outOfStockQuery.isPending || lowInStockQuery.isPending) return <Loading />;
@@ -54,6 +59,31 @@ export function AdminDashboard() {
 		}
 	};
 
+	const orderStats = () => {
+		if (pendingOrderQuery.isPending) return <Loading />;
+
+		if (pendingOrderQuery.isError)
+			return (
+				<Alert severity='error' sx={{ width: '100%', alignItems: 'center' }}>
+					Cannot fetch order data.
+				</Alert>
+			);
+
+		if (orderQuery.isSuccess) {
+			const pendingOrderCount = pendingOrderQuery.data?.pagination.totalItems;
+
+			return pendingOrderCount ? (
+				<Alert severity='info' sx={{ width: '100%', alignItems: 'center' }}>
+					<b>{pendingOrderCount}</b> pending {pendingOrderCount > 1 ? 'orders' : 'order'} to proceed.
+				</Alert>
+			) : (
+				<Alert severity='success' sx={{ width: '100%', alignItems: 'center' }}>
+					No pending orders to proceed.
+				</Alert>
+			);
+		}
+	};
+
 	return (
 		<Stack gap={2}>
 			<Typography variant='h5' mt={2}>
@@ -75,7 +105,7 @@ export function AdminDashboard() {
 							</Stack>
 						</CardContent>
 						<CardActions sx={{ justifyContent: 'flex-end' }}>
-							<Button size='small' onClick={() => navigate('/admin/books')}>
+							<Button size='small' onClick={() => navigate('/books')}>
 								View All {booksQuery.data?.pagination.totalItems} Books
 							</Button>
 						</CardActions>
@@ -92,13 +122,13 @@ export function AdminDashboard() {
 								Orders
 							</Typography>
 							<Stack minHeight={110} mt={2} direction='row' alignItems='stretch'>
-								<Alert severity='success' sx={{ width: '100%', alignItems: 'center' }}>
-									No pending orders to proceed.
-								</Alert>
+								{orderStats()}
 							</Stack>
 						</CardContent>
 						<CardActions sx={{ justifyContent: 'flex-end' }}>
-							<Button size='small'>View All {booksQuery.data?.pagination.totalItems} Orders</Button>
+							<Button size='small' onClick={() => navigate('/orders')}>
+								View All {orderQuery.data?.pagination.totalItems} Orders
+							</Button>
 						</CardActions>
 					</Card>
 				</Grid>
