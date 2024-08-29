@@ -1,15 +1,19 @@
 import AddBoxIcon from '@mui/icons-material/AddBox';
 import DeleteIcon from '@mui/icons-material/Delete';
 import EditIcon from '@mui/icons-material/Edit';
-import FilterListIcon from '@mui/icons-material/FilterList';
+// import FilterListIcon from '@mui/icons-material/FilterList';
 // import LibraryBooksIcon from '@mui/icons-material/LibraryBooks';
 import {
 	Alert,
 	alpha,
 	Box,
+	Breadcrumbs,
 	Checkbox,
 	IconButton,
+	MenuItem,
 	Paper,
+	Select,
+	SelectChangeEvent,
 	Stack,
 	Table,
 	TableBody,
@@ -29,11 +33,11 @@ import { visuallyHidden } from '@mui/utils';
 import { useQueryClient } from '@tanstack/react-query';
 import { enqueueSnackbar } from 'notistack';
 import { useEffect, useState } from 'react';
-import { Navigate, useNavigate } from 'react-router-dom';
-import { Loading } from '../../../components';
+import { Navigate, useNavigate, useSearchParams } from 'react-router-dom';
+import { LinkRouter, Loading } from '../../../components';
 import { LOW_STOCK_QTY } from '../../../consts';
 import { useAuth } from '../../../contexts';
-import { useDeleteMultipleBooks, useGetBooks } from '../../../services';
+import { useDeleteMultipleBooks, useGetBooks, useGetCategories } from '../../../services';
 import { BookT } from '../../../types';
 import { AddStockDialog } from './components/AddStockDialog';
 
@@ -106,17 +110,27 @@ function EnhancedTableHead(props: EnhancedTableProps) {
 }
 
 interface EnhancedTableToolbarProps {
+	selectedCategory: string;
+	setSelectedCategory: React.Dispatch<React.SetStateAction<string>>;
 	totalCount: number;
 	numSelected: number;
 	selected: string[];
 	setSelected: React.Dispatch<React.SetStateAction<string[]>>;
 }
 
-function EnhancedTableToolbar({ totalCount, numSelected, selected, setSelected }: EnhancedTableToolbarProps) {
+function EnhancedTableToolbar({
+	selectedCategory,
+	setSelectedCategory,
+	totalCount,
+	numSelected,
+	selected,
+	setSelected,
+}: EnhancedTableToolbarProps) {
 	const { auth } = useAuth();
 	const navigate = useNavigate();
 	const queryClient = useQueryClient();
 	const deleteMutation = useDeleteMultipleBooks(auth?.token as string);
+	const { data: categories } = useGetCategories();
 
 	const handleDeleteBtnClick = () => {
 		if (confirm(`Are you sure to delete ${numSelected} ${numSelected > 1 ? 'books' : 'book'}?`)) {
@@ -135,7 +149,9 @@ function EnhancedTableToolbar({ totalCount, numSelected, selected, setSelected }
 
 	const handleEditBtnClick = () => navigate(`/books/edit/${selected[0]}`);
 
-	const handleAddBookBtnClick = () => navigate('/books/create');
+	const handleCategoryChange = (event: SelectChangeEvent) => {
+		setSelectedCategory(event.target.value as string);
+	};
 
 	return (
 		<Toolbar
@@ -178,16 +194,35 @@ function EnhancedTableToolbar({ totalCount, numSelected, selected, setSelected }
 			) : (
 				<Stack direction='row' gap={2}>
 					<Tooltip title='Add Book'>
-						<IconButton onClick={handleAddBookBtnClick} color='primary'>
+						<IconButton onClick={() => navigate('/books/create')} color='primary'>
 							<AddBoxIcon />
 						</IconButton>
 					</Tooltip>
 
-					<Tooltip title='Filter list'>
+					<Select
+						size='small'
+						value={selectedCategory}
+						onChange={handleCategoryChange}
+						displayEmpty
+						inputProps={{ 'aria-label': 'Filter by category' }}
+						sx={{ minWidth: { xs: 150, sm: 170, md: 200 } }}>
+						<MenuItem value=''>
+							<em>All Categories</em>
+						</MenuItem>
+						{categories?.data.map(category => (
+							<MenuItem key={category._id} value={category._id}>
+								{category.name}
+							</MenuItem>
+						))}
+					</Select>
+
+					{/* <Tooltip title='Filter list'>
 						<IconButton>
-							<FilterListIcon />
+							<Badge badgeContent={0} color='info'>
+								<FilterListIcon />
+							</Badge>
 						</IconButton>
-					</Tooltip>
+					</Tooltip> */}
 				</Stack>
 			)}
 		</Toolbar>
@@ -198,14 +233,23 @@ export function BookTable() {
 	const [order, setOrder] = useState<Order>('asc');
 	const [sortBy, setSortBy] = useState<keyof BookSummaryT>('title');
 	const [selected, setSelected] = useState<string[]>([]);
+	const [selectedCategory, setSelectedCategory] = useState('');
 	const [page, setPage] = useState(0);
 	const [rowsPerPage, setRowsPerPage] = useState(10);
 
-	const { data, isPending, isError, isSuccess, refetch } = useGetBooks(page + 1, rowsPerPage, { sortBy, order });
+	const [searchParams] = useSearchParams();
+	const params = Object.fromEntries(searchParams.entries());
+
+	const { data, isPending, isError, isSuccess, refetch } = useGetBooks(page + 1, rowsPerPage, {
+		sortBy,
+		order,
+		categoryId: selectedCategory,
+		...params,
+	});
 
 	useEffect(() => {
 		refetch();
-	}, [order, sortBy, rowsPerPage]);
+	}, [order, sortBy, rowsPerPage, selectedCategory]);
 
 	useEffect(() => {
 		setSelected([]);
@@ -270,12 +314,21 @@ export function BookTable() {
 
 		return (
 			<Box sx={{ width: '100%' }}>
+				<Breadcrumbs aria-label='breadcrumb'>
+					<LinkRouter underline='hover' color='inherit' to='/'>
+						Home
+					</LinkRouter>
+					<Typography color='text.primary'>Books</Typography>
+				</Breadcrumbs>
+
 				<Typography variant='h5' my={2}>
 					Inventory Management
 				</Typography>
 
 				<Paper sx={{ width: '100%', mb: 2 }} variant='outlined'>
 					<EnhancedTableToolbar
+						selectedCategory={selectedCategory}
+						setSelectedCategory={setSelectedCategory}
 						totalCount={totalItems}
 						numSelected={selected.length}
 						selected={selected}
@@ -325,7 +378,7 @@ export function BookTable() {
 													fontWeight: 'bold',
 													color: !row.stock
 														? red[500]
-														: row.stock < LOW_STOCK_QTY
+														: row.stock <= LOW_STOCK_QTY
 														? yellow[800]
 														: green[700],
 												}}>

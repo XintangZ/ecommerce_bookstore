@@ -40,14 +40,32 @@ export function AdminDashboard() {
 				return (
 					<Stack gap={2} width='100%'>
 						{outOfStockCount ? (
-							<Alert severity='error'>
+							<Alert
+								severity='error'
+								action={
+									<Button
+										color='inherit'
+										size='small'
+										onClick={() => navigate('/books?isAvailable=false')}>
+										View
+									</Button>
+								}>
 								<b>{outOfStockCount}</b> {outOfStockCount > 1 ? 'books' : 'book'} out of stock.
 							</Alert>
 						) : (
 							<Alert severity='success'>No book out of stock.</Alert>
 						)}
 						{lowInStockCount ? (
-							<Alert severity='warning'>
+							<Alert
+								severity='warning'
+								action={
+									<Button
+										color='inherit'
+										size='small'
+										onClick={() => navigate(`/books?isAvailable=true&maxStock=${LOW_STOCK_QTY}`)}>
+										View
+									</Button>
+								}>
 								<b>{lowInStockCount}</b> {lowInStockCount > 1 ? 'books' : 'book'} low in stock.
 							</Alert>
 						) : (
@@ -73,7 +91,14 @@ export function AdminDashboard() {
 			const pendingOrderCount = pendingOrderQuery.data?.pagination.totalItems;
 
 			return pendingOrderCount ? (
-				<Alert severity='info' sx={{ width: '100%', alignItems: 'center' }}>
+				<Alert
+					severity='info'
+					sx={{ width: '100%', alignItems: 'center' }}
+					action={
+						<Button color='inherit' size='small' onClick={() => navigate('/orders?status=Pending')}>
+							View
+						</Button>
+					}>
 					<b>{pendingOrderCount}</b> pending {pendingOrderCount > 1 ? 'orders' : 'order'} to proceed.
 				</Alert>
 			) : (
