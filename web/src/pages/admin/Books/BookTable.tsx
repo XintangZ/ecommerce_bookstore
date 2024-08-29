@@ -1,5 +1,8 @@
+import AddBoxIcon from '@mui/icons-material/AddBox';
 import DeleteIcon from '@mui/icons-material/Delete';
+import EditIcon from '@mui/icons-material/Edit';
 import FilterListIcon from '@mui/icons-material/FilterList';
+// import LibraryBooksIcon from '@mui/icons-material/LibraryBooks';
 import {
 	Alert,
 	alpha,
@@ -7,6 +10,7 @@ import {
 	Checkbox,
 	IconButton,
 	Paper,
+	Stack,
 	Table,
 	TableBody,
 	TableCell,
@@ -20,34 +24,21 @@ import {
 	Typography,
 } from '@mui/material';
 
+import { green, red, yellow } from '@mui/material/colors';
 import { visuallyHidden } from '@mui/utils';
+import { useQueryClient } from '@tanstack/react-query';
+import { enqueueSnackbar } from 'notistack';
 import { useEffect, useState } from 'react';
-import { Navigate } from 'react-router-dom';
+import { Navigate, useNavigate } from 'react-router-dom';
 import { Loading } from '../../../components';
-import { useGetBooks } from '../../../services';
+import { LOW_STOCK_QTY } from '../../../consts';
+import { useAuth } from '../../../contexts';
+import { useDeleteMultipleBooks, useGetBooks } from '../../../services';
 import { BookT } from '../../../types';
-
-function descendingComparator<T>(a: T, b: T, orderBy: keyof T) {
-	if (b[orderBy] < a[orderBy]) {
-		return -1;
-	}
-	if (b[orderBy] > a[orderBy]) {
-		return 1;
-	}
-	return 0;
-}
+import { AddStockDialog } from './components/AddStockDialog';
 
 type Order = 'asc' | 'desc';
 type BookSummaryT = Pick<BookT, 'isbn' | 'title' | 'author' | 'price' | 'stock'>;
-
-function getComparator<Key extends keyof BookSummaryT>(
-	order: Order,
-	orderBy: Key
-): (a: { [key in Key]: number | string }, b: { [key in Key]: number | string }) => number {
-	return order === 'desc'
-		? (a, b) => descendingComparator(a, b, orderBy)
-		: (a, b) => -descendingComparator(a, b, orderBy);
-}
 
 interface HeadCell {
 	disablePadding: boolean;
@@ -57,36 +48,11 @@ interface HeadCell {
 }
 
 const headCells: readonly HeadCell[] = [
-	{
-		id: 'isbn',
-		numeric: false,
-		disablePadding: true,
-		label: 'ISBN',
-	},
-	{
-		id: 'title',
-		numeric: false,
-		disablePadding: false,
-		label: 'Title',
-	},
-	{
-		id: 'author',
-		numeric: false,
-		disablePadding: false,
-		label: 'Author',
-	},
-	{
-		id: 'price',
-		numeric: true,
-		disablePadding: false,
-		label: 'Price',
-	},
-	{
-		id: 'stock',
-		numeric: true,
-		disablePadding: false,
-		label: 'Stock',
-	},
+	{ id: 'isbn', numeric: false, disablePadding: true, label: 'ISBN' },
+	{ id: 'title', numeric: false, disablePadding: false, label: 'Title' },
+	{ id: 'author', numeric: false, disablePadding: false, label: 'Author' },
+	{ id: 'price', numeric: true, disablePadding: false, label: 'Price' },
+	{ id: 'stock', numeric: true, disablePadding: false, label: 'Stock' },
 ];
 
 interface EnhancedTableProps {
@@ -141,9 +107,35 @@ function EnhancedTableHead(props: EnhancedTableProps) {
 
 interface EnhancedTableToolbarProps {
 	numSelected: number;
+	selected: string[];
+	setSelected: React.Dispatch<React.SetStateAction<string[]>>;
 }
 
-function EnhancedTableToolbar({ numSelected }: EnhancedTableToolbarProps) {
+function EnhancedTableToolbar({ numSelected, selected, setSelected }: EnhancedTableToolbarProps) {
+	const { auth } = useAuth();
+	const navigate = useNavigate();
+	const queryClient = useQueryClient();
+	const deleteMutation = useDeleteMultipleBooks(auth?.token as string);
+
+	const handleDeleteBtnClick = () => {
+		if (confirm(`Are you sure to delete ${numSelected} ${numSelected > 1 ? 'books' : 'book'}?`)) {
+			deleteMutation.mutate(selected, {
+				onSuccess: () => {
+					queryClient.invalidateQueries({ queryKey: ['books'] });
+					setSelected([]);
+					enqueueSnackbar(`Deleted ${numSelected} ${numSelected > 1 ? 'books' : 'book'}`, {
+						variant: 'success',
+					});
+				},
+				onError: () => enqueueSnackbar('An error occurred', { variant: 'error' }),
+			});
+		}
+	};
+
+	const handleEditBtnClick = () => navigate(`/admin/books/edit/${selected[0]}`);
+
+	const handleAddBookBtnClick = () => navigate('/admin/books/create');
+
 	return (
 		<Toolbar
 			sx={[
@@ -161,21 +153,41 @@ function EnhancedTableToolbar({ numSelected }: EnhancedTableToolbarProps) {
 				</Typography>
 			) : (
 				<Typography sx={{ flex: '1 1 100%' }} variant='h6' id='tableTitle' component='div'>
-					Manage Books
+					Books
 				</Typography>
 			)}
 			{numSelected > 0 ? (
-				<Tooltip title='Delete'>
-					<IconButton>
-						<DeleteIcon />
-					</IconButton>
-				</Tooltip>
+				<Stack direction='row' gap={2}>
+					{numSelected === 1 && (
+						<Tooltip title='Edit Details'>
+							<IconButton onClick={handleEditBtnClick} color='primary'>
+								<EditIcon />
+							</IconButton>
+						</Tooltip>
+					)}
+
+					<AddStockDialog bookIds={selected} onSuccess={() => setSelected([])} />
+
+					<Tooltip title='Delete'>
+						<IconButton onClick={handleDeleteBtnClick} color='error'>
+							<DeleteIcon />
+						</IconButton>
+					</Tooltip>
+				</Stack>
 			) : (
-				<Tooltip title='Filter list'>
-					<IconButton>
-						<FilterListIcon />
-					</IconButton>
-				</Tooltip>
+				<Stack direction='row' gap={2}>
+					<Tooltip title='Add Book'>
+						<IconButton onClick={handleAddBookBtnClick} color='primary'>
+							<AddBoxIcon />
+						</IconButton>
+					</Tooltip>
+
+					<Tooltip title='Filter list'>
+						<IconButton>
+							<FilterListIcon />
+						</IconButton>
+					</Tooltip>
+				</Stack>
 			)}
 		</Toolbar>
 	);
@@ -183,21 +195,23 @@ function EnhancedTableToolbar({ numSelected }: EnhancedTableToolbarProps) {
 
 export function BookTable() {
 	const [order, setOrder] = useState<Order>('asc');
-	const [orderBy, setOrderBy] = useState<keyof BookSummaryT>('title');
-	const [selected, setSelected] = useState<readonly string[]>([]);
+	const [sortBy, setSortBy] = useState<keyof BookSummaryT>('title');
+	const [selected, setSelected] = useState<string[]>([]);
 	const [page, setPage] = useState(0);
 	const [rowsPerPage, setRowsPerPage] = useState(10);
 
-	const { data, isPending, isError, isSuccess, refetch } = useGetBooks();
+	const { data, isPending, isError, isSuccess, refetch } = useGetBooks(page + 1, rowsPerPage, { sortBy, order });
 
 	useEffect(() => {
 		refetch();
-	}, [rowsPerPage]);
+	}, [order, sortBy, rowsPerPage]);
+
+	useEffect(() => {
+		setSelected([]);
+	}, [page]);
 
 	if (isPending) return <Loading />;
-
 	if (isError) return <Navigate to='/error' replace />;
-
 	if (isSuccess && !data) {
 		return <Alert severity='info'>No books found.</Alert>;
 	}
@@ -208,12 +222,10 @@ export function BookTable() {
 			pagination: { totalItems, totalPages },
 		} = data;
 
-		const rows = books.sort(getComparator(order, orderBy));
-
 		const handleRequestSort = (_event: React.MouseEvent<unknown>, property: keyof BookSummaryT) => {
-			const isAsc = orderBy === property && order === 'asc';
+			const isAsc = sortBy === property && order === 'asc';
 			setOrder(isAsc ? 'desc' : 'asc');
-			setOrderBy(property);
+			setSortBy(property);
 		};
 
 		const handleSelectAllClick = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -227,7 +239,7 @@ export function BookTable() {
 
 		const handleClick = (_event: React.MouseEvent<unknown>, id: string) => {
 			const selectedIndex = selected.indexOf(id);
-			let newSelected: readonly string[] = [];
+			let newSelected: string[] = [];
 
 			if (selectedIndex === -1) {
 				newSelected = newSelected.concat(selected, id);
@@ -257,20 +269,24 @@ export function BookTable() {
 
 		return (
 			<Box sx={{ width: '100%' }}>
-				<Paper sx={{ width: '100%', mb: 2 }}>
-					<EnhancedTableToolbar numSelected={selected.length} />
+				<Typography variant='h5' my={2}>
+					Inventory Management
+				</Typography>
+
+				<Paper sx={{ width: '100%', mb: 2 }} variant='outlined'>
+					<EnhancedTableToolbar numSelected={selected.length} selected={selected} setSelected={setSelected} />
 					<TableContainer>
 						<Table sx={{ minWidth: 750 }} aria-labelledby='tableTitle' size='medium'>
 							<EnhancedTableHead
 								numSelected={selected.length}
 								order={order}
-								orderBy={orderBy}
+								orderBy={sortBy}
 								onSelectAllClick={handleSelectAllClick}
 								onRequestSort={handleRequestSort}
 								rowCount={books.length}
 							/>
 							<TableBody>
-								{rows.map((row, index) => {
+								{books.map((row, index) => {
 									const isItemSelected = isSelected(row._id);
 									const labelId = `enhanced-table-checkbox-${index}`;
 
@@ -288,18 +304,27 @@ export function BookTable() {
 												<Checkbox
 													color='primary'
 													checked={isItemSelected}
-													inputProps={{
-														'aria-labelledby': labelId,
-													}}
+													inputProps={{ 'aria-labelledby': labelId }}
 												/>
 											</TableCell>
 											<TableCell component='th' id={labelId} scope='row' padding='none'>
 												{row.isbn}
 											</TableCell>
-											<TableCell>{row.title}</TableCell>
-											<TableCell>{row.author}</TableCell>
+											<TableCell align='left'>{row.title}</TableCell>
+											<TableCell align='left'>{row.author}</TableCell>
 											<TableCell align='right'>{row.price}</TableCell>
-											<TableCell align='right'>{row.stock}</TableCell>
+											<TableCell
+												align='right'
+												sx={{
+													fontWeight: 'bold',
+													color: !row.stock
+														? red[500]
+														: row.stock < LOW_STOCK_QTY
+														? yellow[800]
+														: green[700],
+												}}>
+												{row.stock}
+											</TableCell>
 										</TableRow>
 									);
 								})}

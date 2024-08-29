@@ -50,6 +50,7 @@ const getAllBooks = async (req: Request, res: Response) => {
 		minPrice,
 		maxPrice,
 		search,
+		maxStock,
 	} = req.query;
 
 	try {
@@ -98,6 +99,11 @@ const getAllBooks = async (req: Request, res: Response) => {
 				{ title: { $regex: new RegExp(search as string, 'i') } },
 				{ author: { $regex: new RegExp(search as string, 'i') } },
 			];
+		}
+
+		// Filter by stock level if provided
+		if (maxStock) {
+			query.stock = { ...query.stock, $lte: parseInt(maxStock as string) };
 		}
 
 		// Create a sort object based on sortBy and order parameters
@@ -186,6 +192,76 @@ const updateBook = async (req: Request, res: Response) => {
 	}
 };
 
+// Update book stock
+const updateBookStock = async (req: Request, res: Response) => {
+	const { user: { isAdmin = false } = {} } = res.locals;
+	if (!isAdmin) {
+		return res.status(403).json({ message: 'unauthorized_action' });
+	}
+
+	const { bookId } = req.params;
+	const { stockChange } = req.body; // { stockChange: number }
+
+	if (!mongoose.Types.ObjectId.isValid(bookId)) {
+		return res.status(400).json({ message: 'invalid_book_id' });
+	}
+
+	if (typeof stockChange !== 'number') {
+		return res.status(400).json({ message: 'invalid_stock_change' });
+	}
+
+	try {
+		const book = await Book.findById(bookId);
+
+		if (!book) {
+			return res.status(404).json({ message: 'book_not_found' });
+		}
+
+		book.stock += stockChange;
+		await book.save();
+
+		return res.status(200).json({ data: book });
+	} catch (error) {
+		console.error('Error updating book stock:', error);
+		return res.status(500).json({ message: 'server_error' });
+	}
+};
+
+// Update stock for multiple books with the same stock change
+const updateMultipleBookStocks = async (req: Request, res: Response) => {
+	const { user: { isAdmin = false } = {} } = res.locals;
+	if (!isAdmin) {
+		return res.status(403).json({ message: 'unauthorized_action' });
+	}
+
+	const { bookIds, stockChange } = req.body; // { bookIds: string[], stockChange: number }
+
+	if (
+		!Array.isArray(bookIds) ||
+		bookIds.some(id => !mongoose.Types.ObjectId.isValid(id)) ||
+		typeof stockChange !== 'number'
+	) {
+		return res.status(400).json({ message: 'invalid_input' });
+	}
+
+	try {
+		const updatePromises = bookIds.map(id =>
+			Book.findByIdAndUpdate(id, { $inc: { stock: stockChange } }, { new: true, runValidators: true })
+		);
+
+		const updatedBooks = await Promise.all(updatePromises);
+
+		if (updatedBooks.some(book => !book)) {
+			return res.status(404).json({ message: 'some_books_not_found' });
+		}
+
+		return res.status(200).json({ data: updatedBooks });
+	} catch (error) {
+		console.error('Error updating multiple book stocks:', error);
+		return res.status(500).json({ message: 'server_error' });
+	}
+};
+
 // Delete a book
 const deleteBook = async (req: Request, res: Response) => {
 	const { user: { isAdmin = false } = {} } = res.locals;
@@ -193,20 +269,20 @@ const deleteBook = async (req: Request, res: Response) => {
 		return res.status(403).json({ message: 'unauthorized_action' });
 	}
 
-	const { id } = req.params;
+	const { bookId } = req.params;
 
-	if (!mongoose.Types.ObjectId.isValid(id)) {
+	if (!mongoose.Types.ObjectId.isValid(bookId)) {
 		return res.status(400).json({ message: 'invalid_book_id' });
 	}
 
 	try {
-		const book = await Book.findById(id);
+		const book = await Book.findById(bookId);
 
 		if (!book) {
 			return res.status(404).json({ message: 'book_not_found' });
 		}
 
-		await Book.findByIdAndDelete(id);
+		await Book.findByIdAndDelete(bookId);
 
 		return res.status(200).json({ data: book });
 	} catch (error) {
@@ -215,4 +291,40 @@ const deleteBook = async (req: Request, res: Response) => {
 	}
 };
 
-export { createBook, deleteBook, getAllBooks, getBookById, updateBook };
+// Delete multiple books
+const deleteMultipleBooks = async (req: Request, res: Response) => {
+	const { user: { isAdmin = false } = {} } = res.locals;
+	if (!isAdmin) {
+		return res.status(403).json({ message: 'unauthorized_action' });
+	}
+
+	const { bookIds } = req.body; // bookIds: string[]
+
+	if (!Array.isArray(bookIds) || bookIds.some(id => !mongoose.Types.ObjectId.isValid(id))) {
+		return res.status(400).json({ message: 'invalid_book_ids' });
+	}
+
+	try {
+		const deleteResult = await Book.deleteMany({ _id: { $in: bookIds } });
+
+		if (deleteResult.deletedCount === 0) {
+			return res.status(404).json({ message: 'no_books_deleted' });
+		}
+
+		return res.status(200).json({ message: 'books_deleted', deletedCount: deleteResult.deletedCount });
+	} catch (error) {
+		console.error('Error deleting books:', error);
+		return res.status(500).json({ message: 'server_error' });
+	}
+};
+
+export {
+	createBook,
+	deleteBook,
+	deleteMultipleBooks,
+	getAllBooks,
+	getBookById,
+	updateBook,
+	updateBookStock,
+	updateMultipleBookStocks,
+};

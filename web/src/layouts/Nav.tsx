@@ -21,7 +21,6 @@ import {
 	Typography,
 	useTheme,
 } from '@mui/material';
-import { enqueueSnackbar } from 'notistack';
 import * as React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts';
@@ -142,7 +141,6 @@ export function Nav() {
 									onClick={() => {
 										handleCloseUserMenu();
 										logout();
-										enqueueSnackbar('You are logged out', { variant: 'default' });
 									}}>
 									<Typography textAlign='center'>Logout</Typography>
 								</MenuItem>,
