@@ -29,25 +29,37 @@ interface OrderTableProps {
 const OrderTable: React.FC<OrderTableProps> = ({ orders, setOrders, open, setOpen }) => {
     const [openDialog, setOpenDialog] = React.useState(false);
     const [selectedOrderId, setSelectedOrderId] = React.useState<string | null>(null);
+    const [isShipping, setIsShipping] = React.useState(false); // To differentiate between cancel and ship
     const token = localStorage.getItem('token') || '';
+    
+    const user = localStorage.getItem('user');
+    const isAdmin = user ? JSON.parse(user).isAdmin : false;
+
+    console.log(isAdmin);
     const { mutate: updateOrder } = useUpdateOrder(token);
 
     const handleCancelClick = (orderId: string) => {
         setSelectedOrderId(orderId);
+        setIsShipping(false); // Set to false for cancel action
+        setOpenDialog(true);
+    };
+
+    const handleShipClick = (orderId: string) => {
+        setSelectedOrderId(orderId);
+        setIsShipping(true); // Set to true for ship action
         setOpenDialog(true);
     };
 
     const handleDialogClose = (confirm: boolean) => {
         setOpenDialog(false);
         if (confirm && selectedOrderId) {
-            // Update the order status to 'Cancelled'
-            updateOrder({ orderId: selectedOrderId, status: 'Cancelled' }, {
+            const status = isShipping ? 'Shipped' : 'Cancelled';
+            updateOrder({ orderId: selectedOrderId, status }, {
                 onSuccess: (updatedOrder) => {
-                    // Update the local orders state immedi
                     window.location.reload();
                     setOrders(prevOrders => 
                         prevOrders.map(order => 
-                            order._id === updatedOrder._id ? { ...order, status: 'Cancelled' } : order
+                            order._id === updatedOrder._id ? { ...order, status } : order
                         )
                     );
                 },
@@ -91,13 +103,25 @@ const OrderTable: React.FC<OrderTableProps> = ({ orders, setOrders, open, setOpe
                                     <TableCell>{order.status}</TableCell>
                                     <TableCell>
                                         {order.status === 'Pending' && (
-                                            <Button
-                                                variant="outlined"
-                                                color="error"
-                                                onClick={() => handleCancelClick(order._id)}
-                                            >
-                                                Cancel
-                                            </Button>
+                                            <>
+                                                <Button
+                                                    variant="outlined"
+                                                    color="error"
+                                                    onClick={() => handleCancelClick(order._id)}
+                                                >
+                                                    Cancel
+                                                </Button>
+                                                {isAdmin && (
+                                                    <Button
+                                                        variant="outlined"
+                                                        color="primary"
+                                                        onClick={() => handleShipClick(order._id)}
+                                                        style={{ marginLeft: '10px' }}
+                                                    >
+                                                        Ship
+                                                    </Button>
+                                                )}
+                                            </>
                                         )}
                                     </TableCell>
                                 </TableRow>
@@ -133,10 +157,15 @@ const OrderTable: React.FC<OrderTableProps> = ({ orders, setOrders, open, setOpe
 
             {/* Confirmation Dialog */}
             <Dialog open={openDialog} onClose={() => handleDialogClose(false)}>
-                <DialogTitle>Confirm Cancellation</DialogTitle>
+                <DialogTitle>
+                    {isShipping ? 'Confirm Shipment' : 'Confirm Cancellation'}
+                </DialogTitle>
                 <DialogContent>
                     <DialogContentText>
-                        Are you sure you want to cancel this order? This action cannot be undone.
+                        {isShipping
+                            ? 'Do you want to ship this order?'
+                            : 'Are you sure you want to cancel this order? This action cannot be undone.'
+                        }
                     </DialogContentText>
                 </DialogContent>
                 <DialogActions>

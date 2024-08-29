@@ -41,6 +41,10 @@ function AppRoutes() {
 						<Route path='create' element={<BookForm />} />
 						<Route path='edit/:id' element={<BookForm />} />
 					</Route>
+
+					<Route path='orders'>
+						<Route index element={<Orders />} />
+					</Route>
 				</Route>
 
 				<Route
