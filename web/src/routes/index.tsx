@@ -9,6 +9,7 @@ import { BookDetails, Books, Home } from '../pages/client';
 import { GuestRoute } from './GuestRoute';
 import { ProtectedRoute } from './ProtectedRoute';
 import { Register } from '../pages/auth/Register/Register';
+import { Orders } from '../pages/client/Orders/Orders';
 
 function AppRoutes() {
 	return (
@@ -19,6 +20,11 @@ function AppRoutes() {
 				<Route path='books'>
 					<Route index element={<Books />} />
 					<Route path=':id' element={<BookDetails />} />
+				</Route>
+
+				<Route path='orders'>
+					<Route index element={<Orders />} />
+					
 				</Route>
 
 				<Route path='admin' element={<ProtectedRoute isAdminOnly={true} />}>
