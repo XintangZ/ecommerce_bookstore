@@ -36,7 +36,6 @@ export function Nav() {
 	const { auth, logout } = useAuth();
 	const isAdmin = !!auth?.user.isAdmin;
 	const { cartItemCount, setCartItemCount,resetCart } = useCart();
-
 	const [anchorElUser, setAnchorElUser] = React.useState<null | HTMLElement>(null);
 
 	const handleOpenUserMenu = (event: React.MouseEvent<HTMLElement>) => {
@@ -50,6 +49,12 @@ export function Nav() {
 	const handleDrawerToggle = () => {
 		setMobileOpen(prevState => !prevState);
 	};
+
+	React.useEffect(() => {
+		const cartItems = getCartFromLocalStorage();
+		const totalQuantity = cartItems?.reduce((total: number, item: { quantity: number }) => total + item.quantity, 0) || 0;
+		setCartItemCount(totalQuantity);
+	}, [setCartItemCount]);
 
 	React.useEffect(() => {
 		const cartItems = getCartFromLocalStorage();

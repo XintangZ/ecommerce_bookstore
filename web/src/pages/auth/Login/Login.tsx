@@ -39,6 +39,14 @@ export function Login() {
 				} catch (error) {
 						console.error('Failed to fetch cart data:', error);
 				}
+				try {
+					const cartData = await fetchCart(res.data.token);
+					if (cartData) {
+						getCartList(cartData.items);
+					}
+			} catch (error) {
+					console.error('Failed to fetch cart data:', error);
+			}
 			},
 			onError: error => {
 				// Check if the error is an instance of AxiosError
