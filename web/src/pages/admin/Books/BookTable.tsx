@@ -106,12 +106,13 @@ function EnhancedTableHead(props: EnhancedTableProps) {
 }
 
 interface EnhancedTableToolbarProps {
+	totalCount: number;
 	numSelected: number;
 	selected: string[];
 	setSelected: React.Dispatch<React.SetStateAction<string[]>>;
 }
 
-function EnhancedTableToolbar({ numSelected, selected, setSelected }: EnhancedTableToolbarProps) {
+function EnhancedTableToolbar({ totalCount, numSelected, selected, setSelected }: EnhancedTableToolbarProps) {
 	const { auth } = useAuth();
 	const navigate = useNavigate();
 	const queryClient = useQueryClient();
@@ -132,9 +133,9 @@ function EnhancedTableToolbar({ numSelected, selected, setSelected }: EnhancedTa
 		}
 	};
 
-	const handleEditBtnClick = () => navigate(`/admin/books/edit/${selected[0]}`);
+	const handleEditBtnClick = () => navigate(`/books/edit/${selected[0]}`);
 
-	const handleAddBookBtnClick = () => navigate('/admin/books/create');
+	const handleAddBookBtnClick = () => navigate('/books/create');
 
 	return (
 		<Toolbar
@@ -153,7 +154,7 @@ function EnhancedTableToolbar({ numSelected, selected, setSelected }: EnhancedTa
 				</Typography>
 			) : (
 				<Typography sx={{ flex: '1 1 100%' }} variant='h6' id='tableTitle' component='div'>
-					Books
+					{totalCount} {totalCount > 1 ? 'Books' : 'Book'}
 				</Typography>
 			)}
 			{numSelected > 0 ? (
@@ -274,7 +275,12 @@ export function BookTable() {
 				</Typography>
 
 				<Paper sx={{ width: '100%', mb: 2 }} variant='outlined'>
-					<EnhancedTableToolbar numSelected={selected.length} selected={selected} setSelected={setSelected} />
+					<EnhancedTableToolbar
+						totalCount={totalItems}
+						numSelected={selected.length}
+						selected={selected}
+						setSelected={setSelected}
+					/>
 					<TableContainer>
 						<Table sx={{ minWidth: 750 }} aria-labelledby='tableTitle' size='medium'>
 							<EnhancedTableHead

@@ -37,7 +37,7 @@ const AuthProvider = ({ children }: AuthProviderPropsI) => {
 		localStorage.setItem('token', token);
 		localStorage.setItem('user', JSON.stringify(user));
 
-		user.isAdmin ? navigate('/admin') : navigate(-1);
+		navigate(-1);
 
 		enqueueSnackbar(`Welcome, ${user.username}`, {
 			variant: 'success',
