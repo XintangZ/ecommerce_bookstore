@@ -17,36 +17,46 @@ import {
 } from '@mui/material';
 import { KeyboardArrowDown, KeyboardArrowUp } from '@mui/icons-material';
 import { CreateOrderValidationT } from '../../../types';
-import { useUpdateOrder } from '../../../services'; // Adjust the import path as needed
+import { useUpdateOrder } from '../../../services';
 
 interface OrderTableProps {
     orders: CreateOrderValidationT[];
+    setOrders: React.Dispatch<React.SetStateAction<CreateOrderValidationT[]>>;
     open: string | null;
     setOpen: (id: string | null) => void;
 }
 
-const OrderTable: React.FC<OrderTableProps> = ({ orders, open, setOpen }) => {
+const OrderTable: React.FC<OrderTableProps> = ({ orders, setOrders, open, setOpen }) => {
     const [openDialog, setOpenDialog] = React.useState(false);
     const [selectedOrderId, setSelectedOrderId] = React.useState<string | null>(null);
-
     const token = localStorage.getItem('token') || '';
     const { mutate: updateOrder } = useUpdateOrder(token);
 
     const handleCancelClick = (orderId: string) => {
-        console.log('Selected Order ID:', orderId);
         setSelectedOrderId(orderId);
         setOpenDialog(true);
     };
-    
 
-    
-    
     const handleDialogClose = (confirm: boolean) => {
         setOpenDialog(false);
         if (confirm && selectedOrderId) {
-            updateOrder({ orderId: selectedOrderId, status: 'Cancelled' }); // Pass orderId directly here
+            // Update the order status to 'Cancelled'
+            updateOrder({ orderId: selectedOrderId, status: 'Cancelled' }, {
+                onSuccess: (updatedOrder) => {
+                    // Update the local orders state immedi
+                    window.location.reload();
+                    setOrders(prevOrders => 
+                        prevOrders.map(order => 
+                            order._id === updatedOrder._id ? { ...order, status: 'Cancelled' } : order
+                        )
+                    );
+                },
+                onError: (error) => {
+                    console.error('Error updating order:', error);
+                }
+            });
         }
-        setSelectedOrderId(null); // Reset selected order ID
+        setSelectedOrderId(null);
     };
 
     return (
@@ -77,9 +87,7 @@ const OrderTable: React.FC<OrderTableProps> = ({ orders, open, setOpen }) => {
                                     </TableCell>
                                     <TableCell>{order._id}</TableCell>
                                     <TableCell>${order.totalAmount.toFixed(2)}</TableCell>
-                                    <TableCell>
-                                        {order.placedAt ? new Date(order.placedAt).toLocaleString() : 'N/A'}
-                                    </TableCell>
+                                    <TableCell>{order.placedAt ? new Date(order.placedAt).toLocaleString() : 'N/A'}</TableCell>
                                     <TableCell>{order.status}</TableCell>
                                     <TableCell>
                                         {order.status === 'Pending' && (

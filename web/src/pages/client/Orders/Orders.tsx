@@ -13,13 +13,16 @@ import { Navigate } from 'react-router-dom';
 import { LinkRouter, Loading, MuiPagination } from '../../../components';
 import { useGetAllOrders } from '../../../services';
 import OrderTable from './OrderTable'; // Import the new component
-import { GetAllOrdersResT } from '../../../types';
+import { GetAllOrdersResT , } from '../../../types';
+import { CreateOrderValidationT } from '../../../types';
+
 
 export function Orders() {
     const [page, setPage] = useState<number>(1);
     const [sortBy, setSortBy] = useState<string>('date');
     const [order, setOrder] = useState<'asc' | 'desc'>('desc');
     const [open, setOpen] = useState<string | null>(null);
+    const [orders, setOrders] = useState<CreateOrderValidationT[]>([]); // Define orders state
 
     const limit = 10;
     const token = localStorage.getItem('token');
@@ -29,6 +32,15 @@ export function Orders() {
         setPage(1);
     }, [limit, sortBy, order]);
 
+    useEffect(() => {
+        if (isSuccess && data) {
+            const {
+                data: fetchedOrders,
+            } = data as GetAllOrdersResT;
+            setOrders(fetchedOrders); // Update orders state with fetched data
+        }
+    }, [isSuccess, data]);
+
     if (isPending) return <Loading />;
     if (isError) return <Navigate to='/error' replace />;
     if (isSuccess && !data) {
@@ -37,7 +49,6 @@ export function Orders() {
 
     if (isSuccess && data) {
         const {
-            data: orders,
             pagination: { totalPages, totalItems },
         } = data as GetAllOrdersResT;
 
@@ -87,7 +98,7 @@ export function Orders() {
                     </FormControl>
                 </Stack>
 
-                <OrderTable orders={sortedOrders} open={open} setOpen={setOpen} />
+                <OrderTable orders={sortedOrders} setOrders={setOrders} open={open} setOpen={setOpen} />
 
                 {totalPages > 1 && (
                     <MuiPagination
