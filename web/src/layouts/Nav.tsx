@@ -24,7 +24,8 @@ import {
 import { enqueueSnackbar } from 'notistack';
 import * as React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../contexts';
+import { useAuth, useCart } from '../contexts';
+import { getCartFromLocalStorage } from '../utils';
 
 const drawerWidth = 240;
 
@@ -34,6 +35,7 @@ export function Nav() {
 	const navigate = useNavigate();
 	const { auth, logout } = useAuth();
 	const isAdmin = !!auth?.user.isAdmin;
+	const { cartItemCount, setCartItemCount,resetCart } = useCart();
 
 	const [anchorElUser, setAnchorElUser] = React.useState<null | HTMLElement>(null);
 
@@ -48,6 +50,12 @@ export function Nav() {
 	const handleDrawerToggle = () => {
 		setMobileOpen(prevState => !prevState);
 	};
+
+	React.useEffect(() => {
+		const cartItems = getCartFromLocalStorage();
+		const totalQuantity = cartItems?.reduce((total: number, item: { quantity: number }) => total + item.quantity, 0) || 0;
+		setCartItemCount(totalQuantity);
+	}, [setCartItemCount]);
 
 	const drawer = (
 		<Box onClick={handleDrawerToggle} sx={{ textAlign: 'center' }}>
@@ -102,7 +110,7 @@ export function Nav() {
 					<Stack sx={{ flexGrow: 0, flexDirection: 'row', gap: 2 }}>
 						{!isAdmin && (
 							<IconButton size='large' color='inherit' onClick={() => navigate('/cart')}>
-								<Badge badgeContent={0} color='error'>
+								<Badge badgeContent={cartItemCount} color='error'>
 									<ShoppingCartIcon />
 								</Badge>
 							</IconButton>
@@ -142,6 +150,7 @@ export function Nav() {
 									onClick={() => {
 										handleCloseUserMenu();
 										logout();
+										resetCart();
 										enqueueSnackbar('You are logged out', { variant: 'default' });
 									}}>
 									<Typography textAlign='center'>Logout</Typography>
