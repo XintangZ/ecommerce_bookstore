@@ -16,10 +16,6 @@ const getCart = async (req: Request, res: Response) => {
           return res.status(404).json({ error: 'Cart not found' });
       }
 
-      if (cart.items.length === 0) {
-        return res.status(200).json({ message: 'Cart is empty', cart });
-      }
-
       res.status(200).json(cart);
     } catch (error) {
       res.status(500).json({ error: 'Failed to get cart' });
@@ -29,16 +25,21 @@ const getCart = async (req: Request, res: Response) => {
 // update cart
 const updateCart = async (req: Request, res: Response) => {
   const userId = res.locals.user.userId;
-  const { itemId, action, quantity } = req.body; // action: 'add' or 'remove'
+  const { bookId, action, quantity } = req.body; // action: 'add', 'remove', or 'replace'
 
   if (!mongoose.Types.ObjectId.isValid(userId)) {
     return res.status(400).json({ message: 'Invalid user ID format.' });
   }
 
-  if (!mongoose.Types.ObjectId.isValid(itemId)) {
-    return res.status(400).json({ message: 'Invalid item ID format.' });
+  if (!mongoose.Types.ObjectId.isValid(bookId)) {
+    return res.status(400).json({ message: 'Invalid book ID format.' });
   }
 
+  // Ensure quantity is a number
+  const quantityNumber = parseInt(quantity, 10);
+  if (isNaN(quantityNumber) || quantityNumber < 0) {
+    return res.status(400).json({ message: 'Invalid quantity.' });
+  }
 
   try {
     let cart = await Cart.findOne({ userId });
@@ -53,41 +54,51 @@ const updateCart = async (req: Request, res: Response) => {
 
     if (action === 'add') {
       // Add item to cart
-      const itemIndex = cart.items.findIndex(item => item.bookId.toString() === itemId);
+      const itemIndex = cart.items.findIndex(item => item.bookId.toString() === bookId);
 
       if (itemIndex > -1) {
-          // Item already exists, update quantity
-          cart.items[itemIndex].quantity += quantity;
+        // Item already exists, update quantity
+        cart.items[itemIndex].quantity += quantityNumber;
       } else {
-          // Add new item to cart
-          cart.items.push({ bookId: itemId, quantity });
+        // Add new item to cart
+        cart.items.push({ bookId, quantity: quantityNumber });
       }
     } else if (action === 'remove') {
-      const itemIndex = cart.items.findIndex(item => item.bookId.toString() === itemId);
+      const itemIndex = cart.items.findIndex(item => item.bookId.toString() === bookId);
 
       if (itemIndex > -1) {
         // Item exists in the cart
         const currentQuantity = cart.items[itemIndex].quantity;
 
-        if (quantity >= currentQuantity) {
+        if (quantityNumber >= currentQuantity) {
           // If quantity to remove is greater or equal to current quantity, remove item from cart
           cart.items.splice(itemIndex, 1);
         } else {
           // Decrease item quantity
-          cart.items[itemIndex].quantity -= quantity;
+          cart.items[itemIndex].quantity -= quantityNumber;
         }
       } else {
         return res.status(404).json({ message: 'Item not found in cart.' });
       }
-    }else {
-      return res.status(400).json({ message: 'Invalid action. Use "add" or "remove".' });
+    } else if (action === 'replace') {
+      const itemIndex = cart.items.findIndex(item => item.bookId.toString() === bookId);
+
+      if (itemIndex > -1) {
+        // Item exists, replace quantity
+        cart.items[itemIndex].quantity = quantityNumber;
+      } else {
+        // If item doesn't exist, add it to the cart
+        cart.items.push({ bookId, quantity: quantityNumber });
+      }
+    } else {
+      return res.status(400).json({ message: 'Invalid action. Use "add", "remove", or "replace".' });
     }
 
     await cart.save();
     res.status(200).json(cart);
   } catch (error) {
-      console.error('Error updating cart:', error);
-      res.status(500).json({ message: 'Server error' });
+    console.error('Error updating cart:', error);
+    res.status(500).json({ message: 'Server error' });
   }
 };
 

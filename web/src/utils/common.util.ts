@@ -1,3 +1,5 @@
+import { CartItemT} from "../types";
+
 export const getHeaders = (token: string) => {
 	return {
 		headers: {
@@ -6,3 +8,8 @@ export const getHeaders = (token: string) => {
 		},
 	};
 };
+
+export function getCartFromLocalStorage(): CartItemT[] {
+	const cart = localStorage.getItem('cart');
+	return cart ? JSON.parse(cart) : [];
+}
