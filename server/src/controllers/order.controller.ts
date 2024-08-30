@@ -64,11 +64,11 @@ export const getAllOrders = async (req: Request, res: Response) => {
          // Query for orders based on user's role
          const query = isAdmin ?{}:{userId};
 
-        // Find orders with pagination and populate the bookId with book details
+        
         const orders = await Order.find(query)
             .populate({
                 path: 'books.bookId',
-                select: 'isbn title' // Select the fields you want to populate
+                select: 'isbn title' 
             })
             .skip((pageNumber - 1) * limitNumber)
             .limit(limitNumber)
