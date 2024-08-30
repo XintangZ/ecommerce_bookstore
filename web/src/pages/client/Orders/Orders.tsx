@@ -2,32 +2,27 @@ import { useEffect, useState } from 'react';
 import {
     Alert,
     Breadcrumbs,
-    Button,
     FormControl,
     InputLabel,
     MenuItem,
     Select,
     Stack,
-    Table,
-    TableBody,
-    TableCell,
-    TableContainer,
-    TableHead,
-    TableRow,
     Typography,
-    Collapse,
-    IconButton,
 } from '@mui/material';
 import { Navigate } from 'react-router-dom';
 import { LinkRouter, Loading, MuiPagination } from '../../../components';
 import { useGetAllOrders } from '../../../services';
-import { KeyboardArrowDown, KeyboardArrowUp } from '@mui/icons-material';
+import OrderTable from './OrderTable'; // Import the new component
+import { GetAllOrdersResT , } from '../../../types';
+import { CreateOrderValidationT } from '../../../types';
+
 
 export function Orders() {
-    const [page, setPage] = useState(1);
-    const [sortBy, setSortBy] = useState('date');
-    const [order, setOrder] = useState<'asc' | 'desc'>('desc'); // Default to 'desc' for recent first
+    const [page, setPage] = useState<number>(1);
+    const [sortBy, setSortBy] = useState<string>('date');
+    const [order, setOrder] = useState<'asc' | 'desc'>('desc');
     const [open, setOpen] = useState<string | null>(null);
+    const [orders, setOrders] = useState<CreateOrderValidationT[]>([]); // Define orders state
 
     const limit = 10;
     const token = localStorage.getItem('token');
@@ -37,19 +32,25 @@ export function Orders() {
         setPage(1);
     }, [limit, sortBy, order]);
 
+    useEffect(() => {
+        if (isSuccess && data) {
+            const {
+                data: fetchedOrders,
+            } = data as GetAllOrdersResT;
+            setOrders(fetchedOrders); // Update orders state with fetched data
+        }
+    }, [isSuccess, data]);
+
     if (isPending) return <Loading />;
-
     if (isError) return <Navigate to='/error' replace />;
-
     if (isSuccess && !data) {
         return <Alert severity='info'>No orders found.</Alert>;
     }
 
     if (isSuccess && data) {
         const {
-            data: orders,
             pagination: { totalPages, totalItems },
-        } = data;
+        } = data as GetAllOrdersResT;
 
         const sortedOrders = [...orders].sort((a, b) => {
             let comparison = 0;
@@ -97,73 +98,7 @@ export function Orders() {
                     </FormControl>
                 </Stack>
 
-                <TableContainer>
-                    <Table>
-                        <TableHead>
-                            <TableRow>
-                                <TableCell />
-                                <TableCell>Order ID</TableCell>
-                                <TableCell>Total Amount</TableCell>
-                                <TableCell>Placed At</TableCell>
-                                <TableCell>Status</TableCell>
-                                <TableCell>Action</TableCell>
-                            </TableRow>
-                        </TableHead>
-                        <TableBody>
-                            {sortedOrders.map(order => (
-                                <>
-                                    <TableRow key={order._id}>
-                                        <TableCell>
-                                            <IconButton
-                                                size="small"
-                                                onClick={() => setOpen(open === order._id ? null : order._id)}
-                                            >
-                                                {open === order._id ? <KeyboardArrowUp /> : <KeyboardArrowDown />}
-                                            </IconButton>
-                                        </TableCell>
-                                        <TableCell>{order._id}</TableCell>
-                                        <TableCell>${order.totalAmount.toFixed(2)}</TableCell>
-                                        <TableCell>
-                                            {order.placedAt ? new Date(order.placedAt).toLocaleString() : 'N/A'}
-                                        </TableCell>
-                                        <TableCell>{order.status}</TableCell>
-                                        <TableCell>
-                                            {order.status === 'Pending' && (
-                                                <Button variant="outlined" color="error">
-                                                    Cancel
-                                                </Button>
-                                            )}
-                                        </TableCell>
-                                    </TableRow>
-                                    <TableRow>
-                                        <TableCell style={{ paddingBottom: 0, paddingTop: 0 }} colSpan={6}>
-                                            <Collapse in={open === order._id} timeout="auto" unmountOnExit>
-                                                <Table size="small" aria-label="order details">
-                                                    <TableHead>
-                                                        <TableRow>
-                                                            <TableCell>Book ID</TableCell>
-                                                            <TableCell>Quantity</TableCell>
-                                                            <TableCell>Price</TableCell>
-                                                        </TableRow>
-                                                    </TableHead>
-                                                    <TableBody>
-                                                        {order.books.map(book => (
-                                                            <TableRow key={book.bookId}>
-                                                                <TableCell>{book.bookId}</TableCell>
-                                                                <TableCell>{book.quantity}</TableCell>
-                                                                <TableCell>${book.price.toFixed(2)}</TableCell>
-                                                            </TableRow>
-                                                        ))}
-                                                    </TableBody>
-                                                </Table>
-                                            </Collapse>
-                                        </TableCell>
-                                    </TableRow>
-                                </>
-                            ))}
-                        </TableBody>
-                    </Table>
-                </TableContainer>
+                <OrderTable orders={sortedOrders} setOrders={setOrders} open={open} setOpen={setOpen} />
 
                 {totalPages > 1 && (
                     <MuiPagination
