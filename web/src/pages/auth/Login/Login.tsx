@@ -8,7 +8,6 @@ import { useAuth, useCart } from '../../../contexts';
 import { LoginReqSchema } from '../../../schemas';
 import { fetchCart, useLogin } from '../../../services';
 import { LoginReqT } from '../../../types';
-import { enqueueSnackbar } from 'notistack';
 
 export function Login() {
 	const [backendError, setBackendError] = useState<string | null>(null);
@@ -30,23 +29,23 @@ export function Login() {
 		loginMutation.mutate(data, {
 			onSuccess: async res => {
 				login(res.data);
-				enqueueSnackbar(`Welcome, ${res.data.user.username}`, { variant: 'success', hideIconVariant: true });
+
 				try {
 					const cartData = await fetchCart(res.data.token);
 					if (cartData) {
 						getCartList(cartData.items);
 					}
 				} catch (error) {
-						console.error('Failed to fetch cart data:', error);
+					console.error('Failed to fetch cart data:', error);
 				}
 				try {
 					const cartData = await fetchCart(res.data.token);
 					if (cartData) {
 						getCartList(cartData.items);
 					}
-			} catch (error) {
+				} catch (error) {
 					console.error('Failed to fetch cart data:', error);
-			}
+				}
 			},
 			onError: error => {
 				// Check if the error is an instance of AxiosError
