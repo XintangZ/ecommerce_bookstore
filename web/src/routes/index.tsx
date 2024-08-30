@@ -10,6 +10,7 @@ import { Register } from '../pages/auth/Register/Register';
 import { BookDetails, Books, Home } from '../pages/client';
 import { Orders } from '../pages/client/Orders/Orders';
 import { ShoppingCart } from '../pages/client/ShoppingCart/ShoppingCart';
+import { Checkout } from '../pages/client/Checkout/Checkout';
 import { GuestRoute } from './GuestRoute';
 import { ProtectedRoute } from './ProtectedRoute';
 
@@ -38,6 +39,7 @@ function AppRoutes() {
 
 				<Route path='cart'>
 					<Route index element={<ShoppingCart />} />
+					<Route path='checkout' element={<Checkout />} />
 					<Route path=':id' element={<BookDetails />} />
 				</Route>
 

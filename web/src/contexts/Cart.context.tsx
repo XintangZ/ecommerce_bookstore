@@ -75,10 +75,10 @@ export function CartProvider({ children }: CartProviderProps) {
       if (itemIndex > -1) {
         let updatedList: CartItemT[];
   
-        if (prevList[itemIndex].quantity > itemToRemove.quantity) {
+        if (prevList[itemIndex].quantity > 1) {
           updatedList = prevList.map(cartItem =>
             cartItem.bookId._id === itemToRemove.bookId._id
-              ? { ...cartItem, quantity: cartItem.quantity - itemToRemove.quantity }
+              ? { ...cartItem, quantity: cartItem.quantity - 1 }
               : cartItem
           );
         } else {

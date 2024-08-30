@@ -10,5 +10,5 @@ export type AddressT = {
 	street: string;
 	city: string;
 	postalCode: string;
-	country: string;
+	province: string;
 };

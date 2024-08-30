@@ -56,13 +56,6 @@ export function Nav() {
 		setCartItemCount(totalQuantity);
 	}, [setCartItemCount]);
 
-	React.useEffect(() => {
-		const cartItems = getCartFromLocalStorage();
-		const totalQuantity =
-			cartItems?.reduce((total: number, item: { quantity: number }) => total + item.quantity, 0) || 0;
-		setCartItemCount(totalQuantity);
-	}, [setCartItemCount]);
-
 	const drawer = (
 		<Box onClick={handleDrawerToggle} sx={{ textAlign: 'center' }}>
 			<Toolbar />
