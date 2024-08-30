@@ -11,6 +11,7 @@ import { GuestRoute } from './GuestRoute';
 import { ProtectedRoute } from './ProtectedRoute';
 import { Orders } from '../pages/client/Orders/Orders';
 import { ShoppingCart } from '../pages/client/ShoppingCart/ShoppingCart';
+import { Checkout } from '../pages/client/Checkout/Checkout';
 
 function AppRoutes() {
 	return (
@@ -30,6 +31,7 @@ function AppRoutes() {
 
 				<Route path='cart'>
 					<Route index element={<ShoppingCart />} />
+					<Route path='checkout' element={<Checkout />} />
 					<Route path=':id' element={<BookDetails />} />
 				</Route>
 

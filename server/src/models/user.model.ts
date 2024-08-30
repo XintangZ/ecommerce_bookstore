@@ -8,7 +8,7 @@ export interface IUser extends Document {
         street: string;
         city: string;
         postalCode: string;
-        country: string;
+        province: string;
     };
     wishlist: string[];
     isAdmin: boolean;
@@ -22,7 +22,7 @@ const userSchema = new Schema<IUser>({
         street: { type: String },
         city: { type: String },
         postalCode: { type: String },
-        country: { type: String },
+        province: { type: String },
     },
     wishlist: [{ type: Schema.Types.ObjectId, ref: 'Book' }],
     isAdmin: { type: Boolean, default: false }
