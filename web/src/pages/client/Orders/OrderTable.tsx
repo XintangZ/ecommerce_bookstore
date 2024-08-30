@@ -1,4 +1,5 @@
 import React from 'react';
+import { CreateOrderValidationT } from '../../../types';
 import {
     Table,
     TableBody,
@@ -16,8 +17,8 @@ import {
     DialogTitle,
 } from '@mui/material';
 import { KeyboardArrowDown, KeyboardArrowUp } from '@mui/icons-material';
-import { CreateOrderValidationT } from '../../../types';
-import { useUpdateOrder } from '../../../services';
+import { useUpdateOrder, useUpdateMultipleBookStocks } from '../../../services';
+import { enqueueSnackbar } from 'notistack';
 
 interface OrderTableProps {
     orders: CreateOrderValidationT[];
@@ -31,12 +32,11 @@ const OrderTable: React.FC<OrderTableProps> = ({ orders, setOrders, open, setOpe
     const [selectedOrderId, setSelectedOrderId] = React.useState<string | null>(null);
     const [isShipping, setIsShipping] = React.useState(false); // To differentiate between cancel and ship
     const token = localStorage.getItem('token') || '';
-    
+    const { mutate: updateOrder } = useUpdateOrder(token);
+    const { mutate: updateStock } = useUpdateMultipleBookStocks(token);
+
     const user = localStorage.getItem('user');
     const isAdmin = user ? JSON.parse(user).isAdmin : false;
-
-    console.log(isAdmin);
-    const { mutate: updateOrder } = useUpdateOrder(token);
 
     const handleCancelClick = (orderId: string) => {
         setSelectedOrderId(orderId);
@@ -54,19 +54,48 @@ const OrderTable: React.FC<OrderTableProps> = ({ orders, setOrders, open, setOpe
         setOpenDialog(false);
         if (confirm && selectedOrderId) {
             const status = isShipping ? 'Shipped' : 'Cancelled';
-            updateOrder({ orderId: selectedOrderId, status }, {
-                onSuccess: (updatedOrder) => {
-                    window.location.reload();
-                    setOrders(prevOrders => 
-                        prevOrders.map(order => 
-                            order._id === updatedOrder._id ? { ...order, status } : order
-                        )
-                    );
-                },
-                onError: (error) => {
-                    console.error('Error updating order:', error);
-                }
-            });
+
+            // Find the selected order based on selectedOrderId
+            const selectedOrder = orders.find(order => order._id === selectedOrderId);
+
+            if (selectedOrder) {
+                updateOrder({ orderId: selectedOrderId, status }, {
+                    onSuccess: async () => {
+                        if (isShipping) {
+                            // Extract stock changes for each book in the order
+                            const stockChanges = selectedOrder.books.map(book => ({
+                                bookId: book.bookId,
+                                stockChange: -book.quantity, // Reduce stock by the order quantity
+                            }));
+
+                            // Update stock for each book
+                            for (const { bookId, stockChange } of stockChanges) {
+                                updateStock(
+                                    { bookIds: [bookId], stockChange },
+                                    {
+                                        onSuccess: () => {
+                                            enqueueSnackbar(`Stock updated for book ID: ${bookId}`, { variant: 'success' });
+                                        },
+                                        onError: (error) => {
+                                            enqueueSnackbar(`Error updating stock for book ID: ${bookId}`, { variant: 'error' });
+                                            console.error(`Error updating stock for book ID: ${bookId}`, error);
+                                        },
+                                    }
+                                );
+                            }
+                        }
+
+                        setOrders(prevOrders =>
+                            prevOrders.map(order =>
+                                order._id === selectedOrderId ? { ...order, status } : order
+                            )
+                        );
+                    },
+                    onError: (error) => {
+                        console.error('Error updating order:', error);
+                    }
+                });
+            }
         }
         setSelectedOrderId(null);
     };
@@ -164,8 +193,7 @@ const OrderTable: React.FC<OrderTableProps> = ({ orders, setOrders, open, setOpe
                     <DialogContentText>
                         {isShipping
                             ? 'Do you want to ship this order?'
-                            : 'Are you sure you want to cancel this order? This action cannot be undone.'
-                        }
+                            : 'Are you sure you want to cancel this order? This action cannot be undone.'}
                     </DialogContentText>
                 </DialogContent>
                 <DialogActions>
