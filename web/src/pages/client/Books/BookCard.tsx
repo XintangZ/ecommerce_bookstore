@@ -4,13 +4,21 @@ import { useMemo } from 'react';
 import { LinkRouter } from '../../../components';
 import { DEFAULT_COVER_IMG } from '../../../consts';
 import { BookT } from '../../../types';
+import { useCart } from '../../../contexts';
+
 
 type PropsT = {
 	book: BookT;
 };
 
 export function BookCard({ book }: PropsT) {
+	const { addToCartAndUpdateServer } = useCart();
 	const bookDetailUri = useMemo(() => `/books/${book._id}`, [book]);
+	const bookImg = `https://covers.openlibrary.org/b/isbn/${book.isbn}-M.jpg`;
+
+  const handleAddToCart = async () => {
+    addToCartAndUpdateServer(book);
+  };
 
 	return (
 		<Card sx={{ height: '100%' }} variant='outlined'>
@@ -19,7 +27,7 @@ export function BookCard({ book }: PropsT) {
 					component='img'
 					height='160'
 					sx={{ pt: 2, objectFit: 'contain' }}
-					image={book.coverImage || DEFAULT_COVER_IMG}
+					image={ bookImg || DEFAULT_COVER_IMG }
 					alt={book.title}
 				/>
 			</LinkRouter>
@@ -34,7 +42,13 @@ export function BookCard({ book }: PropsT) {
 					${book.price.toFixed(2)}
 				</Typography>
 
-				<Button variant='contained' fullWidth disabled={!book.stock} sx={{ mt: 2 }}>
+				<Button
+          variant='contained'
+          fullWidth
+          disabled={!book.stock}
+          sx={{ mt: 2 }}
+          onClick={handleAddToCart}
+        >
 					{!!book.stock ? `Add to Cart` : 'Out of Stock'}
 				</Button>
 			</CardContent>

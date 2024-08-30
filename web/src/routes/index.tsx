@@ -11,6 +11,7 @@ import { BookDetails, Books, Home } from '../pages/client';
 import { Orders } from '../pages/client/Orders/Orders';
 import { GuestRoute } from './GuestRoute';
 import { ProtectedRoute } from './ProtectedRoute';
+import { ShoppingCart } from '../pages/client/ShoppingCart/ShoppingCart';
 
 function AppRoutes() {
 	const { auth } = useAuth();
@@ -36,7 +37,8 @@ function AppRoutes() {
 				</Route>
 
 				<Route path='cart' element={<ProtectedRoute isAdminOnly={false} />}>
-					{/* <Route index element={<Cart />} /> */}
+				  <Route index element={<ShoppingCart />} />
+          <Route path=':id' element={<BookDetails />} />
 				</Route>
 
 				<Route

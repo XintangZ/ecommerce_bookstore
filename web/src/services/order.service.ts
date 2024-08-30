@@ -74,42 +74,42 @@ export const useGetOrder = (token: string, orderId: string) => {
 
 // Create a new order
 export const useCreateOrder = (token: string) => {
-	return useMutation<
-		CreateOrderValidationT,
-		Error,
-		Omit<CreateOrderValidationT, 'userId' | 'placedAt'> & { userId: string }
-	>({
-		mutationFn: async orderData => {
-			try {
-				const res = await axios.post<CreateOrderValidationT>(
-					`${BACKEND_URL}/orders`,
-					orderData,
-					getHeaders(token)
-				);
-				return res.data;
-			} catch (err) {
-				console.error(err);
-				throw new Error('Failed to create order'); // Ensure the function never returns void
-			}
-		},
-	});
+    return useMutation<CreateOrderValidationT, Error, Omit<CreateOrderValidationT, 'userId' | 'placedAt'> & { userId: string }>({
+        mutationFn: async (orderData) => {
+            try {
+                const res = await axios.post<CreateOrderValidationT>(
+                    `${BACKEND_URL}/orders/add`,
+                    orderData,
+                    getHeaders(token)
+                );
+                return res.data;
+            } catch (err) {
+                console.error(err);
+                throw new Error('Failed to create order'); // Ensure the function never returns void
+            }
+        },
+    });
 };
 
-// Update order status
-export const useUpdateOrder = (token: string, orderId: string) => {
-	return useMutation<CreateOrderValidationT, Error, 'Pending' | 'Shipped' | 'Cancelled'>({
-		mutationFn: async status => {
-			try {
-				const res = await axios.patch<CreateOrderValidationT>(
-					`${BACKEND_URL}/orders/${orderId}`,
-					{ status },
-					getHeaders(token)
-				);
-				return res.data;
-			} catch (err) {
-				console.error(err);
-				throw new Error('Failed to update order');
-			}
-		},
-	});
+export const useUpdateOrder = (token: string) => {
+    return useMutation<CreateOrderValidationT, Error, { orderId: string; status: 'Pending' | 'Shipped' | 'Cancelled' }>({
+        mutationFn: async ({ orderId, status }) => {
+            if (!orderId) {
+                console.error('Order ID is missing or invalid:', orderId);
+                throw new Error('Order ID is missing or invalid');
+            }
+
+            try {
+                const res = await axios.put<CreateOrderValidationT>(
+                    `${BACKEND_URL}/orders/update/${orderId}`,
+                    { status },
+                    getHeaders(token)
+                );
+                return res.data;
+            } catch (err) {
+                console.error(err);
+                throw new Error('Failed to update order');
+            }
+        },
+    });
 };
