@@ -100,6 +100,10 @@ const OrderTable: React.FC<OrderTableProps> = ({ orders, setOrders, open, setOpe
         setSelectedOrderId(null);
     };
 
+    const formatShippingAddress = (address: CreateOrderValidationT['shippingAddress']) => {
+        return `${address.firstName} ${address.lastName}, ${address.street}, ${address.city}, ${address.province}, ${address.postalCode}, Phone: ${address.phone}`;
+    };
+
     return (
         <>
             <TableContainer>
@@ -111,6 +115,7 @@ const OrderTable: React.FC<OrderTableProps> = ({ orders, setOrders, open, setOpe
                             <TableCell>Total Amount</TableCell>
                             <TableCell>Placed At</TableCell>
                             <TableCell>Status</TableCell>
+                            <TableCell>Shipping Address</TableCell>
                             <TableCell>Action</TableCell>
                         </TableRow>
                     </TableHead>
@@ -130,6 +135,7 @@ const OrderTable: React.FC<OrderTableProps> = ({ orders, setOrders, open, setOpe
                                     <TableCell>${order.totalAmount.toFixed(2)}</TableCell>
                                     <TableCell>{order.placedAt ? new Date(order.placedAt).toLocaleString() : 'N/A'}</TableCell>
                                     <TableCell>{order.status}</TableCell>
+                                    <TableCell>{formatShippingAddress(order.shippingAddress)}</TableCell>
                                     <TableCell>
                                         {order.status === 'Pending' && (
                                             <>
@@ -155,7 +161,7 @@ const OrderTable: React.FC<OrderTableProps> = ({ orders, setOrders, open, setOpe
                                     </TableCell>
                                 </TableRow>
                                 <TableRow>
-                                    <TableCell style={{ paddingBottom: 0, paddingTop: 0 }} colSpan={6}>
+                                    <TableCell style={{ paddingBottom: 0, paddingTop: 0 }} colSpan={7}>
                                         <Collapse in={open === order._id} timeout="auto" unmountOnExit>
                                             <Table size="small" aria-label="order details">
                                                 <TableHead>
