@@ -25,7 +25,6 @@ import * as React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth, useCart } from '../contexts';
 import { getCartFromLocalStorage } from '../utils';
-import { enqueueSnackbar } from 'notistack';
 
 const drawerWidth = 240;
 
@@ -35,7 +34,7 @@ export function Nav() {
 	const navigate = useNavigate();
 	const { auth, logout } = useAuth();
 	const isAdmin = !!auth?.user.isAdmin;
-	const { cartItemCount, setCartItemCount,resetCart } = useCart();
+	const { cartItemCount, setCartItemCount, resetCart } = useCart();
 	const [anchorElUser, setAnchorElUser] = React.useState<null | HTMLElement>(null);
 
 	const handleOpenUserMenu = (event: React.MouseEvent<HTMLElement>) => {
@@ -52,13 +51,15 @@ export function Nav() {
 
 	React.useEffect(() => {
 		const cartItems = getCartFromLocalStorage();
-		const totalQuantity = cartItems?.reduce((total: number, item: { quantity: number }) => total + item.quantity, 0) || 0;
+		const totalQuantity =
+			cartItems?.reduce((total: number, item: { quantity: number }) => total + item.quantity, 0) || 0;
 		setCartItemCount(totalQuantity);
 	}, [setCartItemCount]);
 
 	React.useEffect(() => {
 		const cartItems = getCartFromLocalStorage();
-		const totalQuantity = cartItems?.reduce((total: number, item: { quantity: number }) => total + item.quantity, 0) || 0;
+		const totalQuantity =
+			cartItems?.reduce((total: number, item: { quantity: number }) => total + item.quantity, 0) || 0;
 		setCartItemCount(totalQuantity);
 	}, [setCartItemCount]);
 
@@ -164,7 +165,6 @@ export function Nav() {
 										handleCloseUserMenu();
 										logout();
 										resetCart();
-										enqueueSnackbar('You are logged out', { variant: 'default' });
 									}}>
 									<Typography textAlign='center'>Logout</Typography>
 								</MenuItem>,

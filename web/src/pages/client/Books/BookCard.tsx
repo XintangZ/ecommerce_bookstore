@@ -1,11 +1,11 @@
 import { Button, Card, CardContent, CardMedia, Typography } from '@mui/material';
 import { red } from '@mui/material/colors';
+import { enqueueSnackbar } from 'notistack';
 import { useMemo } from 'react';
 import { LinkRouter } from '../../../components';
 import { DEFAULT_COVER_IMG } from '../../../consts';
-import { BookT } from '../../../types';
 import { useCart } from '../../../contexts';
-
+import { BookT } from '../../../types';
 
 type PropsT = {
 	book: BookT;
@@ -16,9 +16,13 @@ export function BookCard({ book }: PropsT) {
 	const bookDetailUri = useMemo(() => `/books/${book._id}`, [book]);
 	const bookImg = `https://covers.openlibrary.org/b/isbn/${book.isbn}-M.jpg`;
 
-  const handleAddToCart = async () => {
-    addToCartAndUpdateServer(book);
-  };
+	const handleAddToCart = async () => {
+		addToCartAndUpdateServer(book);
+		enqueueSnackbar({
+			message: `"${book.title}" added to cart`,
+			variant: 'success',
+		});
+	};
 
 	return (
 		<Card sx={{ height: '100%' }} variant='outlined'>
@@ -27,7 +31,7 @@ export function BookCard({ book }: PropsT) {
 					component='img'
 					height='160'
 					sx={{ pt: 2, objectFit: 'contain' }}
-					image={ bookImg || DEFAULT_COVER_IMG }
+					image={bookImg || DEFAULT_COVER_IMG}
 					alt={book.title}
 				/>
 			</LinkRouter>
@@ -42,13 +46,7 @@ export function BookCard({ book }: PropsT) {
 					${book.price.toFixed(2)}
 				</Typography>
 
-				<Button
-          variant='contained'
-          fullWidth
-          disabled={!book.stock}
-          sx={{ mt: 2 }}
-          onClick={handleAddToCart}
-        >
+				<Button variant='contained' fullWidth disabled={!book.stock} sx={{ mt: 2 }} onClick={handleAddToCart}>
 					{!!book.stock ? `Add to Cart` : 'Out of Stock'}
 				</Button>
 			</CardContent>
