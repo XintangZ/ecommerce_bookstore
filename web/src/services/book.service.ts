@@ -8,7 +8,7 @@ import { getHeaders } from '../utils';
 type FilterParamsT = {
 	sortBy?: string;
 	order?: 'asc' | 'desc';
-	category?: string;
+	categoryId?: string;
 	author?: string;
 	isAvailable?: boolean;
 	minPrice?: number;
@@ -18,7 +18,17 @@ type FilterParamsT = {
 };
 
 export const useGetBooks = (page: number = 1, limit: number = 10, filterParams: FilterParamsT = {}) => {
-	const { sortBy, order = 'asc', category, author, isAvailable, minPrice, maxPrice, search, maxStock } = filterParams;
+	const {
+		sortBy,
+		order = 'asc',
+		categoryId,
+		author,
+		isAvailable,
+		minPrice,
+		maxPrice,
+		search,
+		maxStock,
+	} = filterParams;
 
 	const queryParams = new URLSearchParams({
 		page: page.toString(),
@@ -28,7 +38,7 @@ export const useGetBooks = (page: number = 1, limit: number = 10, filterParams: 
 
 	Object.entries({
 		sortBy,
-		category,
+		categoryId,
 		author,
 		isAvailable,
 		minPrice,
