@@ -9,6 +9,7 @@ import {
 	Box,
 	Breadcrumbs,
 	Checkbox,
+	Chip,
 	IconButton,
 	MenuItem,
 	Paper,
@@ -39,6 +40,7 @@ import { LOW_STOCK_QTY } from '../../../consts';
 import { useAuth } from '../../../contexts';
 import { useDeleteMultipleBooks, useGetBooks, useGetCategories } from '../../../services';
 import { BookT } from '../../../types';
+import { formatCamelToSentence } from '../../../utils';
 import { AddStockDialog } from './components/AddStockDialog';
 
 type Order = 'asc' | 'desc';
@@ -236,9 +238,20 @@ export function BookTable() {
 	const [selectedCategory, setSelectedCategory] = useState('');
 	const [page, setPage] = useState(0);
 	const [rowsPerPage, setRowsPerPage] = useState(10);
+	const [searchParams, setSearchParams] = useSearchParams();
 
-	const [searchParams] = useSearchParams();
 	const params = Object.fromEntries(searchParams.entries());
+	const filterChips = Object.entries(params).map(([key, value]) => {
+		return {
+			key,
+			label: `${formatCamelToSentence(key)}: ${value}`,
+		};
+	});
+
+	const handleDeleteFilterChip = (filterKey: string) => {
+		searchParams.delete(filterKey);
+		setSearchParams(searchParams);
+	};
 
 	const { data, isPending, isError, isSuccess, refetch } = useGetBooks(page + 1, rowsPerPage, {
 		sortBy,
@@ -249,7 +262,7 @@ export function BookTable() {
 
 	useEffect(() => {
 		refetch();
-	}, [order, sortBy, rowsPerPage, selectedCategory]);
+	}, [order, sortBy, rowsPerPage, selectedCategory, params]);
 
 	useEffect(() => {
 		setSelected([]);
@@ -324,6 +337,12 @@ export function BookTable() {
 				<Typography variant='h5' my={2}>
 					Inventory Management
 				</Typography>
+
+				<Stack direction='row' gap={2} mb={2}>
+					{filterChips.map(item => (
+						<Chip key={item.key} label={item.label} onDelete={() => handleDeleteFilterChip(item.key)} />
+					))}
+				</Stack>
 
 				<Paper sx={{ width: '100%', mb: 2 }} variant='outlined'>
 					<EnhancedTableToolbar
