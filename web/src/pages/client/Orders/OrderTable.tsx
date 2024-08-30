@@ -20,6 +20,7 @@ import {
 import { KeyboardArrowDown, KeyboardArrowUp } from '@mui/icons-material';
 import { useUpdateOrder, useUpdateMultipleBookStocks } from '../../../services';
 import { enqueueSnackbar } from 'notistack';
+import { LinkRouter } from '../../../components';
 
 interface OrderTableProps {
     orders: CreateOrderValidationT[];
@@ -72,7 +73,7 @@ const OrderTable: React.FC<OrderTableProps> = ({ orders, setOrders, open, setOpe
                             // Update stock for each book
                             for (const { bookId, stockChange } of stockChanges) {
                                 updateStock(
-                                    { bookIds: [bookId], stockChange },
+                                    { bookIds: [bookId._id], stockChange },
                                     {
                                         onSuccess: () => {
                                             enqueueSnackbar(`Stock updated for book ID: ${bookId}`, { variant: 'success' });
@@ -104,6 +105,8 @@ const OrderTable: React.FC<OrderTableProps> = ({ orders, setOrders, open, setOpe
     const formatShippingAddress = (address: CreateOrderValidationT['shippingAddress']) => {
         return `${address.firstName} ${address.lastName}, ${address.street}, ${address.city}, ${address.province}, ${address.postalCode}, Phone: ${address.phone}`;
     };
+
+    
 
     return (
         <>
@@ -172,19 +175,30 @@ const OrderTable: React.FC<OrderTableProps> = ({ orders, setOrders, open, setOpe
                                                 <Table size="small" aria-label="order details">
                                                     <TableHead>
                                                         <TableRow>
-                                                            <TableCell>Book ID</TableCell>
+                                                            {isAdmin && <TableCell>Book ISBN</TableCell>}
+                                                            <TableCell>Book Title</TableCell>
                                                             <TableCell>Quantity</TableCell>
                                                             <TableCell>Price</TableCell>
                                                         </TableRow>
                                                     </TableHead>
                                                     <TableBody>
-                                                        {order.books.map(book => (
-                                                            <TableRow key={book.bookId}>
-                                                                <TableCell>{book.bookId}</TableCell>
-                                                                <TableCell>{book.quantity}</TableCell>
-                                                                <TableCell>${book.price.toFixed(2)}</TableCell>
-                                                            </TableRow>
-                                                        ))}
+                                                        {order.books.map(book => {
+                                                            console.log(book); 
+                                                            console.log(book.bookId); 
+
+                                                            return (
+                                                                <TableRow key={book.bookId._id}>
+                                                                    {isAdmin && <TableCell>{book.bookId.isbn}</TableCell>}
+                                                                    <TableCell>
+                                                                        <LinkRouter noWrap underline="hover" to={`/books/${book.bookId._id}`}>
+                                                                            {book.bookId.title}
+                                                                        </LinkRouter>
+                                                                    </TableCell>
+                                                                    <TableCell>{book.quantity}</TableCell>
+                                                                    <TableCell>${book.price.toFixed(2)}</TableCell>
+                                                                </TableRow>
+                                                            );
+                                                        })}
                                                     </TableBody>
                                                 </Table>
                                             </Collapse>

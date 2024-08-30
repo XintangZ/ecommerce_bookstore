@@ -1,12 +1,12 @@
 import { z } from 'zod';
-import { createOrderSchema } from '../schemas';
+import { OrdersSchema } from '../schemas';
 import { PaginationT } from './common.type';
 
 
 
 
 
-export type CreateOrderValidationT = z.infer<typeof createOrderSchema> & {
+export type CreateOrderValidationT = z.infer<typeof OrdersSchema> & {
 	_id: string;
 };
 

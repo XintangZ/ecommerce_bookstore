@@ -1,12 +1,16 @@
 import { z } from 'zod';
 
-
-export const createOrderSchema = z.object({
+export const OrdersSchema = z.object({
     books: z.array(
         z.object({
-            bookId: z.string().min(1, { message: 'Invalid book ID format' }),
+            bookId: z.object({
+                _id: z.string().min(1, { message: 'Invalid book ID format' }),
+                title: z.string().min(1, { message: 'Book title is required' }),
+                isbn: z.string().min(1, { message: 'ISBN is required' }),
+            }),
             quantity: z.number().int().positive({ message: 'Quantity must be a positive integer' }),
             price: z.number().positive({ message: 'Price must be a positive number' }),
+            _id: z.string().optional(), // The _id of the order book entry itself
         })
     ).nonempty({ message: 'At least one book is required' }),
 
@@ -26,6 +30,8 @@ export const createOrderSchema = z.object({
 
     status: z.enum(['Pending', 'Shipped', 'Cancelled']).default('Pending'),
     placedAt: z.date().optional(),
+
+    _id: z.string().optional(), // The _id of the order itself
+    userId: z.string().optional(), // User ID associated with the order
+    __v: z.number().optional(), // Version key in MongoDB
 });
-
-
