@@ -1,13 +1,16 @@
 import React, { createContext, useContext, useState, ReactNode } from 'react';
-import { CartItemT } from '../types';
+import { BookT, CartItemT } from '../types';
+import { useUpdateCart } from '../services';
 
 const CartContext = createContext<{
   cartItemCount: number;
   cartList: CartItemT[];
   addToCart: (item: CartItemT) => void;
+  removeFromCart: (item: CartItemT) => void;
   resetCart: () => void;
   getCartList: (items: CartItemT[]) => void;
   setCartItemCount: React.Dispatch<React.SetStateAction<number>>;
+  addToCartAndUpdateServer: (book: BookT) => void;
 } | null>(null);
 
 type CartProviderProps = {
@@ -15,8 +18,10 @@ type CartProviderProps = {
 };
 
 export function CartProvider({ children }: CartProviderProps) {
+  const token = localStorage.getItem('token');
   const [cartItemCount, setCartItemCount] = useState(0);
   const [cartList, setCartList] = useState<CartItemT[]>([]);
+  const updateCartMutation = useUpdateCart(token || '');
 
   const addToCart = (newItem: CartItemT) => {
     setCartItemCount(prevCount => prevCount + 1);
@@ -26,7 +31,7 @@ export function CartProvider({ children }: CartProviderProps) {
         // If there's no previous cart, initialize a new one
         const newCart: CartItemT[] = [{
           bookId: newItem.bookId,
-          quantity: newItem.quantity,
+          quantity: 1,
         }];
         // Save to localStorage
         localStorage.setItem('cart', JSON.stringify(newCart));
@@ -42,7 +47,7 @@ export function CartProvider({ children }: CartProviderProps) {
         // If the book exists, update the quantity
         updatedList = prevList.map(cartItem =>
           cartItem.bookId._id === newItem.bookId._id
-            ? { ...cartItem, quantity: cartItem.quantity + newItem.quantity }
+            ? { ...cartItem, quantity: cartItem.quantity + 1 }
             : cartItem
         );
       } else {
@@ -55,6 +60,58 @@ export function CartProvider({ children }: CartProviderProps) {
   
       return updatedList;
     });
+  };
+
+  const removeFromCart = (itemToRemove: CartItemT) => {
+    setCartItemCount(prevCount => Math.max(prevCount - 1, 0)); 
+  
+    setCartList(prevList => {
+      if (!prevList) {
+        return []; 
+      }
+  
+      const itemIndex = prevList.findIndex(cartItem => cartItem.bookId._id === itemToRemove.bookId._id);
+  
+      if (itemIndex > -1) {
+        let updatedList: CartItemT[];
+  
+        if (prevList[itemIndex].quantity > itemToRemove.quantity) {
+          updatedList = prevList.map(cartItem =>
+            cartItem.bookId._id === itemToRemove.bookId._id
+              ? { ...cartItem, quantity: cartItem.quantity - itemToRemove.quantity }
+              : cartItem
+          );
+        } else {
+          updatedList = prevList.filter(cartItem => cartItem.bookId._id !== itemToRemove.bookId._id);
+        }
+  
+        localStorage.setItem('cart', JSON.stringify(updatedList));
+  
+        return updatedList;
+      }
+      return prevList; 
+    });
+  };
+
+  const addToCartAndUpdateServer = async (book: BookT) => {
+    const newItem: CartItemT = {
+      bookId: book,
+      quantity: 1,
+    };
+
+    addToCart(newItem);
+
+    if (token) {
+      try {
+        await updateCartMutation.mutateAsync({
+          bookId: book._id,
+          action: 'add',
+          quantity: 1,
+        });
+      } catch (error) {
+        console.error('Failed to update cart', error);
+      }
+    }
   };
 
   const resetCart = () => {
@@ -71,7 +128,7 @@ export function CartProvider({ children }: CartProviderProps) {
   };
 
   return (
-    <CartContext.Provider value={{ cartItemCount, addToCart, cartList, resetCart, getCartList, setCartItemCount }}>
+    <CartContext.Provider value={{ cartItemCount, addToCart, removeFromCart, cartList, resetCart, getCartList, setCartItemCount, addToCartAndUpdateServer }}>
       {children}
     </CartContext.Provider>
   );

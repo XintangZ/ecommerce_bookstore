@@ -10,6 +10,7 @@ import { BookDetails, Books, Home } from '../pages/client';
 import { GuestRoute } from './GuestRoute';
 import { ProtectedRoute } from './ProtectedRoute';
 import { Orders } from '../pages/client/Orders/Orders';
+import { ShoppingCart } from '../pages/client/ShoppingCart/ShoppingCart';
 
 function AppRoutes() {
 	return (
@@ -25,6 +26,11 @@ function AppRoutes() {
 				<Route path='orders'>
 					<Route index element={<Orders />} />
 					
+				</Route>
+
+				<Route path='cart'>
+					<Route index element={<ShoppingCart />} />
+					<Route path=':id' element={<BookDetails />} />
 				</Route>
 
 				<Route path='admin' element={<ProtectedRoute isAdminOnly={true} />}>

@@ -3,40 +3,21 @@ import { red } from '@mui/material/colors';
 import { useMemo } from 'react';
 import { LinkRouter } from '../../../components';
 import { DEFAULT_COVER_IMG } from '../../../consts';
-import { BookT, CartItemT } from '../../../types';
+import { BookT } from '../../../types';
 import { useCart } from '../../../contexts';
-import { useUpdateCart } from '../../../services';
+
 
 type PropsT = {
 	book: BookT;
 };
 
 export function BookCard({ book }: PropsT) {
-	const token = localStorage.getItem('token');
-	const { addToCart } = useCart();
+	const { addToCartAndUpdateServer } = useCart();
 	const bookDetailUri = useMemo(() => `/books/${book._id}`, [book]);
 	const bookImg = `https://covers.openlibrary.org/b/isbn/${book.isbn}-M.jpg`;
-	
-  const updateCartMutation = useUpdateCart(token || '');
 
   const handleAddToCart = async () => {
-    const newItem: CartItemT = {
-      bookId: book,
-      quantity: 1,
-    };
-    addToCart(newItem);
-
-    if (token) {
-      try {
-        await updateCartMutation.mutateAsync({
-          bookId: book._id,
-					action:'add',
-          quantity: 1,
-        });
-      } catch (error) {
-        console.error('Failed to update cart', error);
-      }
-    }
+    addToCartAndUpdateServer(book);
   };
 
 	return (
