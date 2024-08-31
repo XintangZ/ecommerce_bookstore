@@ -12,3 +12,7 @@ export type AddressT = {
 	postalCode: string;
 	province: string;
 };
+
+export type GetUserResT = {
+	data: UserT
+}

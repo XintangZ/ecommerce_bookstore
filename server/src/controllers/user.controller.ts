@@ -130,11 +130,6 @@ const updateUser = async (req: Request, res: Response) => {
 		return res.status(400).json({ message: 'Invalid user ID format.' });
 	}
 
-  const existingUser = await User.findOne({ email: updateData.email });
-  if (existingUser) {
-    return res.status(400).json({ message: 'User with this email already exists.' });
-  }
-
 	try {
 		const existingUser = await User.findById(id);
 
@@ -174,7 +169,7 @@ const updateWishlist = async (req: Request, res: Response) => {
 
     const updatedUser = await existingUser.save();
 
-    res.status(200).json({ user: updatedUser });
+    res.status(200).json({ message: 'User updated successfully' });
   } catch (error) {
     console.error('Error updating wishlist:', error);
     res.status(500).json({ message: 'Server error' });

@@ -148,14 +148,14 @@ export function Nav() {
 							open={Boolean(anchorElUser)}
 							onClose={handleCloseUserMenu}>
 							{auth && [
-								// <MenuItem
-								// 	key='profile'
-								// 	onClick={() => {
-								// 		handleCloseUserMenu();
-								// 		navigate('/profile');
-								// 	}}>
-								// 	<Typography textAlign='center'>Profile</Typography>
-								// </MenuItem>,
+								<MenuItem
+									key='profile'
+									onClick={() => {
+										handleCloseUserMenu();
+										navigate('/profile');
+									}}>
+									<Typography textAlign='center'>Profile</Typography>
+								</MenuItem>,
 								<MenuItem
 									key='logout'
 									onClick={() => {

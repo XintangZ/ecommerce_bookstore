@@ -97,10 +97,10 @@ export function Checkout() {
     if (userData) {
       setAddress({
         ...address,
-        street: userData.address?.street || '',
-        city: userData.address?.city || '',
-        postalCode: userData.address?.postalCode || '',
-        province: userData.address?.province || ''
+        street: userData.data.address?.street || '',
+        city: userData.data.address?.city || '',
+        postalCode: userData.data.address?.postalCode || '',
+        province: userData.data.address?.province || ''
       });
     }
   }, [userData]);
@@ -261,7 +261,7 @@ export function Checkout() {
       <Paper sx={{ p: 3 }}>
         <Typography variant="h6">Shipping Method</Typography>
         <RadioGroup value={shippingMethod} onChange={handleShippingChange}>
-          {subtotal >= 100 ? <FormControlLabel
+          {subtotal >= amountFreeShipping ? <FormControlLabel
             value="standard"
             control={<Radio />}
             label="Free Shipping (3-4 days) - $0"

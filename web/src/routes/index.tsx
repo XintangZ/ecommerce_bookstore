@@ -13,6 +13,7 @@ import { ShoppingCart } from '../pages/client/ShoppingCart/ShoppingCart';
 import { Checkout } from '../pages/client/Checkout/Checkout';
 import { GuestRoute } from './GuestRoute';
 import { ProtectedRoute } from './ProtectedRoute';
+import { Profile } from '../pages/client/Profile/Profile';
 
 function AppRoutes() {
 	const { auth } = useAuth();
@@ -37,10 +38,17 @@ function AppRoutes() {
 					<Route index element={<Orders />} />
 				</Route>
 
+				<Route element={<ProtectedRoute isAdminOnly={false} />}>
+					<Route path='profile' element={<Profile />} />
+				</Route>
+
 				<Route path='cart'>
 					<Route index element={<ShoppingCart />} />
-					<Route path='checkout' element={<Checkout />} />
 					<Route path=':id' element={<BookDetails />} />
+
+					<Route element={<ProtectedRoute isAdminOnly={false} />}>
+						<Route path='checkout' element={<Checkout />} />
+					</Route>
 				</Route>
 
 				<Route

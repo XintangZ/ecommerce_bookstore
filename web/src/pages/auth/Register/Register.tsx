@@ -6,7 +6,7 @@ import { SubmitHandler, useForm } from 'react-hook-form';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../../contexts';
 import { RegisterReqSchemaExt } from '../../../schemas';
-import { updateCart, useLogin, useRegister, useUpdateCart } from '../../../services';
+import { updateCart, useLogin, useRegister } from '../../../services';
 import { LoginResT, RegisterReqExt, RegisterReqT } from '../../../types';
 import { getCartFromLocalStorage } from '../../../utils';
 
