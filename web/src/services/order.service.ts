@@ -1,7 +1,7 @@
 import { keepPreviousData, useMutation, useQuery } from '@tanstack/react-query';
 import axios from 'axios';
 import { BACKEND_URL } from '../consts';
-import { CreateOrderValidationT, GetAllOrdersResT } from '../types';
+import { CreateOrderValidationT, GetAllOrdersResT, placeOrderValidationT } from '../types';
 import { getHeaders } from '../utils';
 
 // Get all orders for a user or admin with pagination
@@ -74,10 +74,10 @@ export const useGetOrder = (token: string, orderId: string) => {
 
 // Create a new order
 export const useCreateOrder = (token: string) => {
-    return useMutation<CreateOrderValidationT, Error, Omit<CreateOrderValidationT, 'userId' | 'placedAt'> & { userId: string }>({
-        mutationFn: async (orderData) => {
+    return useMutation<placeOrderValidationT, Error, placeOrderValidationT>({
+        mutationFn: async (orderData: placeOrderValidationT) => {
             try {
-                const res = await axios.post<CreateOrderValidationT>(
+                const res = await axios.post<placeOrderValidationT>(
                     `${BACKEND_URL}/orders/add`,
                     orderData,
                     getHeaders(token)

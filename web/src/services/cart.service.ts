@@ -29,6 +29,7 @@ export const fetchCart = async (token: string) => {
   return response.data;
 };
 
+
 // update cart
 export const updateCart = async (token: string, data: CartT[]): Promise<CartT[]> => {
   try {
@@ -37,4 +38,14 @@ export const updateCart = async (token: string, data: CartT[]): Promise<CartT[]>
   } catch {
     throw new Error('Failed to update cart');
   }
+
+// clear cart
+export const useClearCart = (token: string) => {
+  return useMutation({
+    mutationFn: async () => {
+      const config = getHeaders(token); 
+      const res = await axios.delete(`${BACKEND_URL}/cart/clear`, config);
+      return res.data;
+    },
+  });
 };
