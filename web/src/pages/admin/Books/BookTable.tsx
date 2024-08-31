@@ -1,15 +1,18 @@
 import AddBoxIcon from '@mui/icons-material/AddBox';
 import DeleteIcon from '@mui/icons-material/Delete';
 import EditIcon from '@mui/icons-material/Edit';
-// import FilterListIcon from '@mui/icons-material/FilterList';
+import FilterListIcon from '@mui/icons-material/FilterList';
 // import LibraryBooksIcon from '@mui/icons-material/LibraryBooks';
 import {
 	Alert,
 	alpha,
+	Badge,
 	Box,
 	Breadcrumbs,
 	Checkbox,
 	Chip,
+	Collapse,
+	Grid,
 	IconButton,
 	MenuItem,
 	Paper,
@@ -39,12 +42,12 @@ import { LinkRouter, Loading } from '../../../components';
 import { LOW_STOCK_QTY } from '../../../consts';
 import { useAuth } from '../../../contexts';
 import { useDeleteMultipleBooks, useGetBooks, useGetCategories } from '../../../services';
-import { BookT } from '../../../types';
+import { BookT, GetCategoriesResT } from '../../../types';
 import { formatCamelToSentence } from '../../../utils';
 import { AddStockDialog } from './components/AddStockDialog';
 
 type Order = 'asc' | 'desc';
-type BookSummaryT = Pick<BookT, 'isbn' | 'title' | 'author' | 'price' | 'stock'>;
+type BookSummaryT = Pick<BookT, 'isbn' | 'title' | 'author' | 'price' | 'stock' | 'createdAt'>;
 
 interface HeadCell {
 	disablePadding: boolean;
@@ -57,6 +60,7 @@ const headCells: readonly HeadCell[] = [
 	{ id: 'isbn', numeric: false, disablePadding: true, label: 'ISBN' },
 	{ id: 'title', numeric: false, disablePadding: false, label: 'Title' },
 	{ id: 'author', numeric: false, disablePadding: false, label: 'Author' },
+	{ id: 'createdAt', numeric: false, disablePadding: false, label: 'Date Added' },
 	{ id: 'price', numeric: true, disablePadding: false, label: 'Price' },
 	{ id: 'stock', numeric: true, disablePadding: false, label: 'Stock' },
 ];
@@ -112,27 +116,36 @@ function EnhancedTableHead(props: EnhancedTableProps) {
 }
 
 interface EnhancedTableToolbarProps {
-	selectedCategory: string;
-	setSelectedCategory: React.Dispatch<React.SetStateAction<string>>;
 	totalCount: number;
 	numSelected: number;
 	selected: string[];
 	setSelected: React.Dispatch<React.SetStateAction<string[]>>;
 }
 
-function EnhancedTableToolbar({
-	selectedCategory,
-	setSelectedCategory,
-	totalCount,
-	numSelected,
-	selected,
-	setSelected,
-}: EnhancedTableToolbarProps) {
+function EnhancedTableToolbar({ totalCount, numSelected, selected, setSelected }: EnhancedTableToolbarProps) {
 	const { auth } = useAuth();
 	const navigate = useNavigate();
+	const [searchParams, setSearchParams] = useSearchParams();
+	const [isFilterOpen, setIsFilterOpen] = useState(false);
 	const queryClient = useQueryClient();
 	const deleteMutation = useDeleteMultipleBooks(auth?.token as string);
-	const { data: categories } = useGetCategories();
+	const categories =
+		(queryClient.getQueriesData({ queryKey: ['categories'] })[0][1] as GetCategoriesResT) ||
+		({ data: [] } as GetCategoriesResT);
+
+	useEffect(() => {
+		if (!!numSelected) setIsFilterOpen(false);
+	}, [numSelected]);
+
+	const setStockLevel = () => {
+		const isAvailable = searchParams.get('isAvailable');
+		const isLowStock = searchParams.get('isLowStock');
+
+		if (isAvailable === 'true') return 'inStock';
+		if (isAvailable === 'false') return 'outOfStock';
+		if (isLowStock === 'true') return 'lowStock';
+		return '';
+	};
 
 	const handleDeleteBtnClick = () => {
 		if (confirm(`Are you sure to delete ${numSelected} ${numSelected > 1 ? 'books' : 'book'}?`)) {
@@ -152,82 +165,130 @@ function EnhancedTableToolbar({
 	const handleEditBtnClick = () => navigate(`/books/edit/${selected[0]}`);
 
 	const handleCategoryChange = (event: SelectChangeEvent) => {
-		setSelectedCategory(event.target.value as string);
+		const categoryId = event.target.value;
+		categoryId ? searchParams.set('categoryId', categoryId) : searchParams.delete('categoryId');
+		setSearchParams(searchParams);
+	};
+
+	const handleStockLevelChange = (event: SelectChangeEvent) => {
+		searchParams.delete('isAvailable');
+		searchParams.delete('isLowStock');
+
+		switch (event.target.value) {
+			case 'inStock':
+				searchParams.set('isAvailable', 'true');
+				break;
+			case 'lowStock':
+				searchParams.set('isLowStock', 'true');
+				break;
+			case 'outOfStock':
+				searchParams.set('isAvailable', 'false');
+				break;
+		}
+		setSearchParams(searchParams);
 	};
 
 	return (
-		<Toolbar
-			sx={[
-				{
-					pl: { sm: 2 },
-					pr: { xs: 1, sm: 1 },
-				},
-				numSelected > 0 && {
-					bgcolor: theme => alpha(theme.palette.primary.main, theme.palette.action.activatedOpacity),
-				},
-			]}>
-			{numSelected > 0 ? (
-				<Typography sx={{ flex: '1 1 100%' }} color='inherit' variant='subtitle1' component='div'>
-					{numSelected} selected
-				</Typography>
-			) : (
-				<Typography sx={{ flex: '1 1 100%' }} variant='h6' id='tableTitle' component='div'>
-					{totalCount} {totalCount > 1 ? 'Books' : 'Book'}
-				</Typography>
-			)}
-			{numSelected > 0 ? (
-				<Stack direction='row' gap={2}>
-					{numSelected === 1 && (
-						<Tooltip title='Edit Details'>
-							<IconButton onClick={handleEditBtnClick} color='primary'>
-								<EditIcon />
+		<>
+			<Toolbar
+				sx={[
+					{
+						pl: { sm: 2 },
+						pr: { xs: 1, sm: 1 },
+					},
+					numSelected > 0 && {
+						bgcolor: theme => alpha(theme.palette.primary.main, theme.palette.action.activatedOpacity),
+					},
+				]}>
+				{numSelected > 0 ? (
+					<Typography sx={{ flex: '1 1 100%' }} color='inherit' variant='subtitle1' component='div'>
+						{numSelected} selected
+					</Typography>
+				) : (
+					<Typography sx={{ flex: '1 1 100%' }} variant='h6' id='tableTitle' component='div'>
+						{totalCount} {totalCount > 1 ? 'Books' : 'Book'}
+					</Typography>
+				)}
+				{numSelected > 0 ? (
+					<Stack direction='row' gap={2}>
+						{numSelected === 1 && (
+							<Tooltip title='Edit Details'>
+								<IconButton onClick={handleEditBtnClick} color='primary'>
+									<EditIcon />
+								</IconButton>
+							</Tooltip>
+						)}
+
+						<AddStockDialog bookIds={selected} onSuccess={() => setSelected([])} />
+
+						<Tooltip title='Delete'>
+							<IconButton onClick={handleDeleteBtnClick} color='error'>
+								<DeleteIcon />
 							</IconButton>
 						</Tooltip>
-					)}
+					</Stack>
+				) : (
+					<Stack direction='row' gap={2}>
+						<Tooltip title='Add Book'>
+							<IconButton onClick={() => navigate('/books/create')} color='primary'>
+								<AddBoxIcon />
+							</IconButton>
+						</Tooltip>
 
-					<AddStockDialog bookIds={selected} onSuccess={() => setSelected([])} />
-
-					<Tooltip title='Delete'>
-						<IconButton onClick={handleDeleteBtnClick} color='error'>
-							<DeleteIcon />
-						</IconButton>
-					</Tooltip>
-				</Stack>
-			) : (
-				<Stack direction='row' gap={2}>
-					<Tooltip title='Add Book'>
-						<IconButton onClick={() => navigate('/books/create')} color='primary'>
-							<AddBoxIcon />
-						</IconButton>
-					</Tooltip>
-
-					<Select
-						size='small'
-						value={selectedCategory}
-						onChange={handleCategoryChange}
-						displayEmpty
-						inputProps={{ 'aria-label': 'Filter by category' }}
-						sx={{ minWidth: { xs: 150, sm: 170, md: 200 } }}>
-						<MenuItem value=''>
-							<em>All Categories</em>
-						</MenuItem>
-						{categories?.data.map(category => (
-							<MenuItem key={category._id} value={category._id}>
-								{category.name}
+						<Tooltip title='Filter list'>
+							<IconButton
+								onClick={() => {
+									setIsFilterOpen(!isFilterOpen);
+								}}>
+								<Badge badgeContent={searchParams.size} color='info'>
+									<FilterListIcon />
+								</Badge>
+							</IconButton>
+						</Tooltip>
+					</Stack>
+				)}
+			</Toolbar>
+			<Collapse in={isFilterOpen} timeout='auto' unmountOnExit>
+				<Grid container spacing={2} px={2}>
+					<Grid item xs={6} sm={4} md={3} lg={2}>
+						<Select
+							size='small'
+							variant='standard'
+							value={searchParams.get('categoryId') || ''}
+							onChange={handleCategoryChange}
+							displayEmpty
+							fullWidth
+							inputProps={{ 'aria-label': 'Filter by category' }}>
+							<MenuItem value=''>
+								<em>All Categories</em>
 							</MenuItem>
-						))}
-					</Select>
-
-					{/* <Tooltip title='Filter list'>
-						<IconButton>
-							<Badge badgeContent={0} color='info'>
-								<FilterListIcon />
-							</Badge>
-						</IconButton>
-					</Tooltip> */}
-				</Stack>
-			)}
-		</Toolbar>
+							{categories.data.map(category => (
+								<MenuItem key={category._id} value={category._id}>
+									{category.name}
+								</MenuItem>
+							))}
+						</Select>
+					</Grid>
+					<Grid item xs={6} sm={4} md={3} lg={2}>
+						<Select
+							size='small'
+							variant='standard'
+							value={setStockLevel()}
+							onChange={handleStockLevelChange}
+							displayEmpty
+							fullWidth
+							inputProps={{ 'aria-label': 'Filter by stock level' }}>
+							<MenuItem value=''>
+								<em>All Stock Level</em>
+							</MenuItem>
+							<MenuItem value='inStock'>In Stock</MenuItem>
+							<MenuItem value='lowStock'>Low in Stock</MenuItem>
+							<MenuItem value='outOfStock'>Out of Stock</MenuItem>
+						</Select>
+					</Grid>
+				</Grid>
+			</Collapse>
+		</>
 	);
 }
 
@@ -235,34 +296,58 @@ export function BookTable() {
 	const [order, setOrder] = useState<Order>('asc');
 	const [sortBy, setSortBy] = useState<keyof BookSummaryT>('title');
 	const [selected, setSelected] = useState<string[]>([]);
-	const [selectedCategory, setSelectedCategory] = useState('');
 	const [page, setPage] = useState(0);
 	const [rowsPerPage, setRowsPerPage] = useState(10);
 	const [searchParams, setSearchParams] = useSearchParams();
 
+	const { data: categories } = useGetCategories();
 	const params = Object.fromEntries(searchParams.entries());
-	const filterChips = Object.entries(params).map(([key, value]) => {
-		return {
-			key,
-			label: `${formatCamelToSentence(key)}: ${value}`,
-		};
-	});
 
-	const handleDeleteFilterChip = (filterKey: string) => {
-		searchParams.delete(filterKey);
-		setSearchParams(searchParams);
+	const formatFilterChip = (searchParams: URLSearchParams) => {
+		const params = Object.fromEntries(searchParams.entries());
+		return Object.entries(params).map(([key, value]) => {
+			let label = '';
+
+			switch (key) {
+				case 'isAvailable':
+					label = value === 'true' ? 'In Stock' : 'Out of stock';
+					break;
+				case 'categoryId':
+					label = categories?.data.find(item => item._id === value)?.name || '';
+					break;
+				case 'isLowStock':
+					label = 'Low in Stock';
+					break;
+				default:
+					label = `${formatCamelToSentence(key)}: ${value}`;
+					break;
+			}
+
+			return { key, label };
+		});
+	};
+
+	const filterChips = formatFilterChip(searchParams);
+
+	const handleDeleteFilterChip = (filterKey?: string) => {
+		if (filterKey) {
+			searchParams.delete(filterKey);
+			setSearchParams(searchParams);
+		} else {
+			setSearchParams();
+		}
+		setSelected([]);
 	};
 
 	const { data, isPending, isError, isSuccess, refetch } = useGetBooks(page + 1, rowsPerPage, {
 		sortBy,
 		order,
-		categoryId: selectedCategory,
 		...params,
 	});
 
 	useEffect(() => {
 		refetch();
-	}, [order, sortBy, rowsPerPage, selectedCategory, params]);
+	}, [order, sortBy, rowsPerPage, params]);
 
 	useEffect(() => {
 		setSelected([]);
@@ -338,16 +423,23 @@ export function BookTable() {
 					Inventory Management
 				</Typography>
 
-				<Stack direction='row' gap={2} mb={2}>
-					{filterChips.map(item => (
-						<Chip key={item.key} label={item.label} onDelete={() => handleDeleteFilterChip(item.key)} />
-					))}
-				</Stack>
+				{!!filterChips.length && (
+					<Stack direction='row' gap={2} mb={2}>
+						{filterChips.map(item => (
+							<Chip key={item.key} label={item.label} onDelete={() => handleDeleteFilterChip(item.key)} />
+						))}
+
+						<Chip
+							label='Clear Filters'
+							onClick={() => handleDeleteFilterChip()}
+							color='error'
+							variant='outlined'
+						/>
+					</Stack>
+				)}
 
 				<Paper sx={{ width: '100%', mb: 2 }} variant='outlined'>
 					<EnhancedTableToolbar
-						selectedCategory={selectedCategory}
-						setSelectedCategory={setSelectedCategory}
 						totalCount={totalItems}
 						numSelected={selected.length}
 						selected={selected}
@@ -390,6 +482,9 @@ export function BookTable() {
 											</TableCell>
 											<TableCell align='left'>{row.title}</TableCell>
 											<TableCell align='left'>{row.author}</TableCell>
+											<TableCell align='left' sx={{ minWidth: 110 }}>
+												{row.createdAt.toString().split('T')[0]}
+											</TableCell>
 											<TableCell align='right'>{row.price}</TableCell>
 											<TableCell
 												align='right'
@@ -397,7 +492,7 @@ export function BookTable() {
 													fontWeight: 'bold',
 													color: !row.stock
 														? red[500]
-														: row.stock <= LOW_STOCK_QTY
+														: row.stock < LOW_STOCK_QTY
 														? yellow[800]
 														: green[700],
 												}}>

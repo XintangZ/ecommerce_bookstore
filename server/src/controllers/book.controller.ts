@@ -50,7 +50,7 @@ const getAllBooks = async (req: Request, res: Response) => {
 		minPrice,
 		maxPrice,
 		search,
-		maxStock,
+		isLowStock,
 	} = req.query;
 
 	try {
@@ -84,6 +84,11 @@ const getAllBooks = async (req: Request, res: Response) => {
 			query.stock = isAvailable === 'true' ? { $gt: 0 } : 0;
 		}
 
+		// Filter by stock level if provided
+		if (isLowStock === 'true') {
+			query.stock = { ...query.stock, $gt: 0, $lt: 20 };
+		}
+
 		// Filter by minPrice and maxPrice if provided
 		if (minPrice) {
 			query.price = { ...query.price, $gte: parseFloat(minPrice as string) };
@@ -99,11 +104,6 @@ const getAllBooks = async (req: Request, res: Response) => {
 				{ title: { $regex: new RegExp(search as string, 'i') } },
 				{ author: { $regex: new RegExp(search as string, 'i') } },
 			];
-		}
-
-		// Filter by stock level if provided
-		if (maxStock) {
-			query.stock = { ...query.stock, $lte: parseInt(maxStock as string) };
 		}
 
 		// Create a sort object based on sortBy and order parameters

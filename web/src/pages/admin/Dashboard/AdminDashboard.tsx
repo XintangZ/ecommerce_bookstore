@@ -1,7 +1,6 @@
 import { Alert, Button, Card, CardActions, CardContent, Grid, Stack, Typography } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import { Loading } from '../../../components';
-import { LOW_STOCK_QTY } from '../../../consts';
 import { useAuth } from '../../../contexts';
 import { useGetAllOrders, useGetBooks } from '../../../services';
 
@@ -11,12 +10,12 @@ export function AdminDashboard() {
 
 	const booksQuery = useGetBooks(1, 1);
 	const outOfStockQuery = useGetBooks(1, 1, { isAvailable: false });
-	const lowInStockQuery = useGetBooks(1, 1, { isAvailable: true, maxStock: LOW_STOCK_QTY });
+	const lowInStockQuery = useGetBooks(1, 1, { isLowStock: true });
 
 	const orderQuery = useGetAllOrders(auth?.token as string, 1, 1);
 	const pendingOrderQuery = useGetAllOrders(auth?.token as string, 1, 1, { status: 'Pending' });
 
-	const bookStats = () => {
+	const stockStats = () => {
 		if (outOfStockQuery.isPending || lowInStockQuery.isPending) return <Loading />;
 
 		if (outOfStockQuery.isError || lowInStockQuery.isError)
@@ -62,7 +61,7 @@ export function AdminDashboard() {
 									<Button
 										color='inherit'
 										size='small'
-										onClick={() => navigate(`/books?isAvailable=true&maxStock=${LOW_STOCK_QTY}`)}>
+										onClick={() => navigate(`/books?isLowStock=true`)}>
 										View
 									</Button>
 								}>
@@ -126,7 +125,7 @@ export function AdminDashboard() {
 								Books
 							</Typography>
 							<Stack minHeight={110} mt={2} direction='row' alignItems='stretch'>
-								{bookStats()}
+								{stockStats()}
 							</Stack>
 						</CardContent>
 						<CardActions sx={{ justifyContent: 'flex-end' }}>

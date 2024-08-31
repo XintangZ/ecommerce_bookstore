@@ -26,4 +26,5 @@ export const CreateBookSchema = z.object({
 		.refine(value => !isNaN(value.getTime()), { message: 'Published Date must be a valid date' })
 		.optional(),
 	coverImage: z.string().optional(),
+	createdAt: z.date().default(new Date()),
 });
