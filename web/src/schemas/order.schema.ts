@@ -1,10 +1,13 @@
 import { z } from 'zod';
 
-
 export const createOrderSchema = z.object({
     books: z.array(
         z.object({
-            bookId: z.string().min(1, { message: 'Invalid book ID format' }),
+            bookId: z.object({
+                _id: z.string().min(1, { message: 'Invalid book ID format' }),
+                title: z.string().min(1, { message: 'Book title is required' }),
+                isbn: z.string().min(1, { message: 'ISBN is required' }),
+            }),
             quantity: z.number().int().positive({ message: 'Quantity must be a positive integer' }),
             price: z.number().positive({ message: 'Price must be a positive number' }),
         })
@@ -27,5 +30,3 @@ export const createOrderSchema = z.object({
     status: z.enum(['Pending', 'Shipped', 'Cancelled']).default('Pending'),
     placedAt: z.date().optional(),
 });
-
-

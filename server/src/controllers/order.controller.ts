@@ -36,61 +36,64 @@ export const createOrder = async (req: Request, res: Response) => {
 
 // Get all orders
 export const getAllOrders = async (req: Request, res: Response) => {
-	const { page = 1, limit = 10, status } = req.query; // Added status query parameter
+    
+    const { page = 1, limit = 10 } = req.query;
+    const { user: { isAdmin = false } = {} } = res.locals;
+    const userId = res.locals.user.userId;
 
-	const { user: { isAdmin = false } = {} } = res.locals;
-	const userId = res.locals.user.userId;
+    if (!userId) {
+        return res.status(400).json({ message: 'User ID not found in token' });
+    }
 
-	if (!userId) {
-		return res.status(400).json({ message: 'User ID not found in token' });
-	}
+    try {
+        // Convert pagination parameters to numbers
+        const pageNumber = parseInt(page as string, 10);
+        const limitNumber = parseInt(limit as string, 10);
 
-	try {
-		// Convert pagination parameters to numbers
-		const pageNumber = parseInt(page as string, 10);
-		const limitNumber = parseInt(limit as string, 10);
+        // Validate pagination parameters
+        if (isNaN(pageNumber) || pageNumber < 1) {
+            return res.status(400).json({ message: 'Invalid page number.' });
+        }
+        if (isNaN(limitNumber) || limitNumber < 1) {
+            return res.status(400).json({ message: 'Invalid limit value.' });
+        }
 
-		// Validate pagination parameters
-		if (isNaN(pageNumber) || pageNumber < 1) {
-			return res.status(400).json({ message: 'Invalid page number.' });
-		}
-		if (isNaN(limitNumber) || limitNumber < 1) {
-			return res.status(400).json({ message: 'Invalid limit value.' });
-		}
+        // Query for orders based on user's role
+        const query = isAdmin ? {} : { userId };
 
-		// Build the query object
-		const query: any = isAdmin ? {} : { userId };
+        // Find orders with pagination and populate the bookId with book details
+        const orders = await Order.find(query)
+            
+            .skip((pageNumber - 1) * limitNumber)
+            .limit(limitNumber)
+			.populate({
+                path: 'books.bookId',
+                select: 'isbn title', 
+            })
+            .exec();
 
-		if (status) {
-			query.status = status;
-		}
+        // Get the total count of orders for pagination metadata
+        const totalOrders = await Order.countDocuments(query).exec();
+		
+        // Calculate total pages
+        const totalPages = Math.ceil(totalOrders / limitNumber);
 
-		// Find orders with pagination
-		const orders = await Order.find(query)
-			.skip((pageNumber - 1) * limitNumber)
-			.limit(limitNumber)
-			.exec();
-
-		// Get the total count of orders for pagination metadata
-		const totalOrders = await Order.countDocuments(query).exec();
-
-		// Calculate total pages
-		const totalPages = Math.ceil(totalOrders / limitNumber);
-
-		return res.status(200).json({
-			data: orders,
-			pagination: {
-				page: pageNumber,
-				limit: limitNumber,
-				totalPages: totalPages,
-				totalItems: totalOrders,
-			},
-		});
-	} catch (error) {
-		console.error('Error getting all orders:', error);
-		return res.status(500).json({ message: 'Server error' });
-	}
+        return res.status(200).json({
+            data: orders,
+            pagination: {
+                page: pageNumber,
+                limit: limitNumber,
+                totalPages: totalPages,
+                totalItems: totalOrders,
+            },
+        });
+    } catch (error) {
+        console.error('Error getting all orders:', error);
+        return res.status(500).json({ message: 'Server error' });
+    }
 };
+
+
 
 // Get a single order by ID
 
