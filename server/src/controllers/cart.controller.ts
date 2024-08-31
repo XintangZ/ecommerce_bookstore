@@ -22,8 +22,37 @@ const getCart = async (req: Request, res: Response) => {
     }
 };
 
-// update cart
-const updateCart = async (req: Request, res: Response) => {
+// create cart items by user ID
+const updateCartItems = async (req: Request, res: Response) => {
+  try {
+    const userId = res.locals.user.userId;
+    
+    if (!mongoose.Types.ObjectId.isValid(userId)) {
+      return res.status(400).json({ error: 'Invalid user ID format.' });
+    }
+
+    // Assuming req.body.items is an array of CartItem objects
+    const newItems = req.body;
+
+    if (!Array.isArray(newItems) || newItems.length === 0) {
+      return res.status(400).json({ error: 'Items array is required and cannot be empty.' });
+    }
+
+    const cart = await Cart.findOneAndUpdate(
+      { userId }, // Find the cart by userId
+      { $set: { items: newItems } }, // Update the items array with newItems
+      { new: true, upsert: true, useFindAndModify: false } // Options to return the updated document and create if not found
+    );
+
+    res.status(200).json({message: 'Cart updated successfully'});
+  } catch (error) {
+    console.error('Error creating/updating cart items:', error);
+    res.status(500).json({ error: 'Failed to create or update cart items' });
+  }
+};
+
+// update cart item
+const updateCartItem = async (req: Request, res: Response) => {
   const userId = res.locals.user.userId;
   const { bookId, action, quantity } = req.body; // action: 'add', 'remove', or 'replace'
 
@@ -128,4 +157,4 @@ const clearCart = async (req: Request, res: Response) => {
   }
 };
 
-export { getCart, updateCart, clearCart };
+export { getCart, updateCartItem, updateCartItems, clearCart };

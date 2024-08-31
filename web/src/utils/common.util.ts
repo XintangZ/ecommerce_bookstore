@@ -1,4 +1,4 @@
-import { CartItemT } from '../types';
+import { CartItemT, CartT } from '../types';
 
 export const getHeaders = (token: string) => {
 	return {
@@ -9,9 +9,27 @@ export const getHeaders = (token: string) => {
 	};
 };
 
-export function getCartFromLocalStorage(): CartItemT[] {
+export function getCartItemFromLocalStorage(): CartItemT[] {
 	const cart = localStorage.getItem('cart');
 	return cart ? JSON.parse(cart) : [];
+}
+
+export function getCartFromLocalStorage(): CartT[] {
+  const cart = localStorage.getItem('cart');
+  
+  if (!cart) {
+    return [];
+  }
+
+  const cartItems: CartItemT[] = JSON.parse(cart);
+  
+  // Transform CartItemT[] to CartT[]
+  const transformedCart: CartT[] = cartItems.map(item => ({
+    bookId: item.bookId._id, // Extract the string ID from the BookT object
+    quantity: item.quantity,
+  }));
+
+  return transformedCart;
 }
 
 // 'helloWorld' => 'Hello world'

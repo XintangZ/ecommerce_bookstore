@@ -6,8 +6,9 @@ import { SubmitHandler, useForm } from 'react-hook-form';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../../contexts';
 import { RegisterReqSchemaExt } from '../../../schemas';
-import { useLogin, useRegister } from '../../../services';
+import { updateCart, useLogin, useRegister, useUpdateCart } from '../../../services';
 import { LoginResT, RegisterReqExt, RegisterReqT } from '../../../types';
+import { getCartFromLocalStorage } from '../../../utils';
 
 export function Register() {
 	const [backendError, setBackendError] = useState<string | null>(null);
@@ -25,6 +26,8 @@ export function Register() {
 	const registerMutation = useRegister();
 	const loginMutation = useLogin();
 
+	const cart = getCartFromLocalStorage();
+
 	const onSubmit: SubmitHandler<RegisterReqExt> = data => {
 		const { confirmPassword, ...registerData } = data;
 
@@ -34,7 +37,14 @@ export function Register() {
 				loginMutation.mutate(
 					{ email: data.email, password: data.password },
 					{
-						onSuccess: (res: { data: LoginResT }) => login(res.data),
+						onSuccess: async (res: { data: LoginResT }) => {
+							login(res.data);
+
+							// Check if cart is not empty and update it
+							if (cart.length > 0) {
+								await updateCart(res.data.token, cart);
+							}
+						},
 					}
 				);
 			},

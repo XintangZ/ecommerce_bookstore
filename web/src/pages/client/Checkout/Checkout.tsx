@@ -24,7 +24,7 @@ import {
 } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import { LinkRouter } from '../../../components';
-import { getCartFromLocalStorage } from '../../../utils';
+import { getCartItemFromLocalStorage } from '../../../utils';
 import { useGetUser } from '../../../services/user.service';
 import { useAuth } from '../../../contexts';
 
@@ -84,7 +84,7 @@ export function Checkout() {
   const [phoneNumberError, setPhoneNumberError] = useState<string | null>(null);
   const [postalCodeError, setPostalCodeError] = useState<string | null>(null);
 
-  const cart = getCartFromLocalStorage();
+  const cart = getCartItemFromLocalStorage();
 
   const shippingCosts = {
     standard: 5.99, // Standard Shipping 3-4 days
@@ -314,7 +314,7 @@ export function Checkout() {
                 <Typography>Total before tax:</Typography>
               </TableCell>
               <TableCell align="right">
-                <Typography>${subtotal}</Typography>
+                <Typography>${subtotal.toFixed(2)}</Typography>
               </TableCell>
             </TableRow>
             <TableRow>

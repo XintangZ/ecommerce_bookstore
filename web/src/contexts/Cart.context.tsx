@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, ReactNode } from 'react';
 import { BookT, CartItemT } from '../types';
-import { useUpdateCart } from '../services';
+import { useUpdateCartItem } from '../services';
 
 const CartContext = createContext<{
   cartItemCount: number;
@@ -8,7 +8,7 @@ const CartContext = createContext<{
   addToCart: (item: CartItemT) => void;
   removeFromCart: (item: CartItemT) => void;
   resetCart: () => void;
-  getCartList: (items: CartItemT[]) => void;
+  setCartListAndCount: (items: CartItemT[]) => void;
   setCartItemCount: React.Dispatch<React.SetStateAction<number>>;
   addToCartAndUpdateServer: (book: BookT) => void;
 } | null>(null);
@@ -21,7 +21,7 @@ export function CartProvider({ children }: CartProviderProps) {
   const token = localStorage.getItem('token');
   const [cartItemCount, setCartItemCount] = useState(0);
   const [cartList, setCartList] = useState<CartItemT[]>([]);
-  const updateCartMutation = useUpdateCart(token || '');
+  const updateCartMutation = useUpdateCartItem(token || '');
 
   const addToCart = (newItem: CartItemT) => {
     setCartItemCount(prevCount => prevCount + 1);
@@ -120,7 +120,7 @@ export function CartProvider({ children }: CartProviderProps) {
     localStorage.removeItem('cart');
   }
 
-  const getCartList = (items: CartItemT[]) => {
+  const setCartListAndCount = (items: CartItemT[]) => {
     setCartList(items);
     const total = items?.reduce((sum: number, item: { quantity: number }) => sum + item.quantity, 0) || 0;
     setCartItemCount(total);
@@ -128,7 +128,7 @@ export function CartProvider({ children }: CartProviderProps) {
   };
 
   return (
-    <CartContext.Provider value={{ cartItemCount, addToCart, removeFromCart, cartList, resetCart, getCartList, setCartItemCount, addToCartAndUpdateServer }}>
+    <CartContext.Provider value={{ cartItemCount, addToCart, removeFromCart, cartList, resetCart, setCartListAndCount, setCartItemCount, addToCartAndUpdateServer }}>
       {children}
     </CartContext.Provider>
   );

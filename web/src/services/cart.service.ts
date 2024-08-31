@@ -2,14 +2,14 @@ import { useMutation } from '@tanstack/react-query';
 import axios from 'axios';
 import { BACKEND_URL } from '../consts';
 import { getHeaders } from '../utils';
-import { CartUpdateActionT } from '../types';
+import { CartT, CartUpdateActionT } from '../types';
 
 // update cart
-export const useUpdateCart = (token: string ) => {
+export const useUpdateCartItem = (token: string ) => {
   return useMutation({
     mutationFn: async (data: CartUpdateActionT) => {
       const res = await axios.put<CartUpdateActionT>(
-        `${BACKEND_URL}/cart`,
+        `${BACKEND_URL}/cart/${data.bookId}`,
         data,
         getHeaders(token)
       );
@@ -27,4 +27,14 @@ export const fetchCart = async (token: string) => {
     },
   });
   return response.data;
+};
+
+// update cart
+export const updateCart = async (token: string, data: CartT[]): Promise<CartT[]> => {
+  try {
+    const res = await axios.put<CartT[]>(`${BACKEND_URL}/cart`, data, getHeaders(token));
+    return res.data;
+  } catch {
+    throw new Error('Failed to update cart');
+  }
 };

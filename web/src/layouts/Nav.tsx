@@ -24,7 +24,7 @@ import {
 import * as React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth, useCart } from '../contexts';
-import { getCartFromLocalStorage } from '../utils';
+import { getCartItemFromLocalStorage } from '../utils';
 
 const drawerWidth = 200;
 
@@ -50,7 +50,7 @@ export function Nav() {
 	};
 
 	React.useEffect(() => {
-		const cartItems = getCartFromLocalStorage();
+		const cartItems = getCartItemFromLocalStorage();
 		const totalQuantity =
 			cartItems?.reduce((total: number, item: { quantity: number }) => total + item.quantity, 0) || 0;
 		setCartItemCount(totalQuantity);
