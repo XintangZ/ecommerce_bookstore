@@ -36,11 +36,15 @@ export function BookCard({ book }: PropsT) {
 				/>
 			</LinkRouter>
 			<CardContent>
-				<LinkRouter variant='h5' noWrap underline='hover' to={bookDetailUri}>
-					{book.title}
+				<LinkRouter underline='hover' to={bookDetailUri}>
+					<Typography variant='h5' noWrap>
+						{book.title}
+					</Typography>
 				</LinkRouter>
-				<Typography variant='subtitle1' color='text.secondary' noWrap>
-					{book.author}
+				<Typography color='text.secondary'>
+					<Typography variant='subtitle1' noWrap>
+						{book.author}
+					</Typography>
 				</Typography>
 				<Typography variant='h6' color={red[600]}>
 					${book.price.toFixed(2)}

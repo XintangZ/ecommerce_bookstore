@@ -34,13 +34,13 @@ export function BookDetails() {
 					<Typography color='text.primary'>{book.title}</Typography>
 				</Breadcrumbs>
 
-				<Grid container>
+				<Grid container spacing={2}>
 					<Grid item xs={12} md={4}>
 						<CardMedia
 							component='img'
 							height='300'
 							sx={{ p: 2, objectFit: 'contain' }}
-							image={book.coverImage || DEFAULT_COVER_IMG}
+							image={`https://covers.openlibrary.org/b/isbn/${book.isbn}-M.jpg` || DEFAULT_COVER_IMG}
 							alt={book.title}
 						/>
 					</Grid>

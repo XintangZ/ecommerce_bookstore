@@ -10,6 +10,7 @@ interface Book extends Document {
 	stock: number;
 	publishedDate: Date;
 	coverImage: string;
+	createdAt: Date;
 }
 
 const bookSchema = new Schema<Book>({
@@ -22,6 +23,7 @@ const bookSchema = new Schema<Book>({
 	stock: { type: Number, required: true },
 	publishedDate: { type: Date, required: true },
 	coverImage: { type: String },
+	createdAt: { type: Date, default: Date.now() },
 });
 
 export const Book = model<Book>('Book', bookSchema);

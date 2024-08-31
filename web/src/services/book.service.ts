@@ -14,7 +14,7 @@ type FilterParamsT = {
 	minPrice?: number;
 	maxPrice?: number;
 	search?: string;
-	maxStock?: number;
+	isLowStock?: boolean;
 };
 
 export const useGetBooks = (page: number = 1, limit: number = 10, filterParams: FilterParamsT = {}) => {
@@ -27,7 +27,7 @@ export const useGetBooks = (page: number = 1, limit: number = 10, filterParams: 
 		minPrice,
 		maxPrice,
 		search,
-		maxStock,
+		isLowStock,
 	} = filterParams;
 
 	const queryParams = new URLSearchParams({
@@ -44,7 +44,7 @@ export const useGetBooks = (page: number = 1, limit: number = 10, filterParams: 
 		minPrice,
 		maxPrice,
 		search,
-		maxStock,
+		isLowStock,
 	}).forEach(([key, value]) => {
 		if (value !== undefined) {
 			queryParams.append(key, value.toString());

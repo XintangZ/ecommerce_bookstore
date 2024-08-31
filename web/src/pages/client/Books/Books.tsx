@@ -19,8 +19,8 @@ import { BookCard } from './BookCard';
 
 export function Books() {
 	const [page, setPage] = useState(1);
-	const [sortBy, setSortBy] = useState('title');
-	const [order, setOrder] = useState<'asc' | 'desc'>('asc');
+	const [sortBy, setSortBy] = useState('createdAt');
+	const [order, setOrder] = useState<'asc' | 'desc'>('desc');
 	const [isAvailable, setIsAvailable] = useState<boolean | undefined>();
 
 	const limit = 12;
@@ -87,6 +87,7 @@ export function Books() {
 								setOrder(order as 'asc' | 'desc');
 							}}
 							label='Sort By'>
+							<MenuItem value='createdAt_desc'>New Arrival</MenuItem>
 							<MenuItem value='title_asc'>Title (Asc)</MenuItem>
 							<MenuItem value='title_desc'>Title (Desc)</MenuItem>
 							<MenuItem value='price_asc'>Price (Asc)</MenuItem>
@@ -97,7 +98,7 @@ export function Books() {
 
 				<Grid container spacing={3}>
 					{books.map(book => (
-						<Grid item key={book.isbn} xs={12} sm={6} md={4} lg={3}>
+						<Grid item key={book.isbn} xs={12} sm={6} md={4} lg={3} zeroMinWidth>
 							<BookCard book={book} />
 						</Grid>
 					))}

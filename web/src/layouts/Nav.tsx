@@ -26,7 +26,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth, useCart } from '../contexts';
 import { getCartFromLocalStorage } from '../utils';
 
-const drawerWidth = 240;
+const drawerWidth = 200;
 
 export function Nav() {
 	const [mobileOpen, setMobileOpen] = React.useState(false);
@@ -64,11 +64,15 @@ export function Nav() {
 					<ListItemButton sx={{ textAlign: 'center' }} onClick={() => navigate('/')}>
 						<ListItemText primary='Home' />
 					</ListItemButton>
+				</ListItem>
 
+				<ListItem disablePadding>
 					<ListItemButton sx={{ textAlign: 'center' }} onClick={() => navigate('/books')}>
 						<ListItemText primary='Books' />
 					</ListItemButton>
+				</ListItem>
 
+				<ListItem disablePadding>
 					<ListItemButton sx={{ textAlign: 'center' }} onClick={() => navigate('/orders')}>
 						<ListItemText primary='Orders' />
 					</ListItemButton>
