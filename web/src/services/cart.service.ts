@@ -28,3 +28,15 @@ export const fetchCart = async (token: string) => {
   });
   return response.data;
 };
+
+
+// clear cart
+export const useClearCart = (token: string) => {
+  return useMutation({
+    mutationFn: async () => {
+      const config = getHeaders(token); 
+      const res = await axios.delete(`${BACKEND_URL}/cart/clear`, config);
+      return res.data;
+    },
+  });
+};

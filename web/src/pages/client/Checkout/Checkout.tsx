@@ -27,6 +27,9 @@ import { LinkRouter } from '../../../components';
 import { getCartFromLocalStorage } from '../../../utils';
 import { useGetUser } from '../../../services/user.service';
 import { useAuth } from '../../../contexts';
+import { enqueueSnackbar } from 'notistack';
+import { useCreateOrder, useClearCart } from '../../../services';
+import { useCart } from '../../../contexts';
 
 const provinces = [
   'Alberta',
@@ -159,14 +162,84 @@ export function Checkout() {
   const shippingCost = shippingCosts[shippingMethod as 'standard' | 'express'];
   const total = subtotal + shippingCost + taxGst + taxPst;
 
-  const handleSubmit = () => {
-    if (address.street && address.city && address.postalCode && address.province) {
-      // Proceed to payment or order confirmation
-      navigate('/order-confirmation');
-    } else {
+  // const handleSubmit = () => {
+  //   if (address.street && address.city && address.postalCode && address.province) {
+  //     // Proceed to payment or order confirmation
+  //     navigate('/order-confirmation');
+  //   } else {
+  //     setIsError(true);
+  //   }
+  // };
+  
+
+
+
+
+  // submit start
+const createOrderMutation = useCreateOrder(auth?.token as string);
+const clearCartMutation = useClearCart(auth?.token as string); 
+const { resetCart } = useCart();
+
+const handleSubmit = async () => {
+  if (!address.street || !address.city || !address.postalCode || !address.province) {
       setIsError(true);
-    }
+      return;
+  }
+
+  const cart = JSON.parse(localStorage.getItem('cart') || '[]'); 
+
+  if (cart.length === 0) {
+      enqueueSnackbar('Your cart is empty. Please add items to your cart before placing an order.', { variant: 'error' });
+      return;
+  }
+
+  const books = cart.map((item: any) => ({
+      bookId: item.bookId._id, 
+      quantity: item.quantity,
+      price: item.bookId.price,
+  })) as [{ bookId: string; quantity: number; price: number }]; // Assertion
+
+  const orderData = {
+      books: books, 
+      totalAmount: total, 
+      shippingAddress: {
+          firstName: address.firstName,
+          lastName: address.lastName,
+          street: address.street,
+          city: address.city,
+          province: address.province,
+          postalCode: address.postalCode,
+          phone: address.phoneNumber,
+      },
   };
+
+  try {
+      
+      await createOrderMutation.mutateAsync(orderData);
+      
+      await clearCartMutation.mutateAsync();
+      
+      enqueueSnackbar('Order placed successfully!', { variant: 'success' });
+      //localStorage.removeItem('cart'); 
+      resetCart();
+      navigate('/orders'); 
+  } catch (error) {
+      console.error('Failed to place order:', error);
+      enqueueSnackbar('Failed to place order. Please try again.', { variant: 'error' });
+  }
+};
+
+
+
+
+  // submit end
+
+
+
+
+
+
+
 
   function priceRow(qty: number, unit: number) {
     return qty * unit;
