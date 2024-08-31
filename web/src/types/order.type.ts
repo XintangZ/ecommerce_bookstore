@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { createOrderSchema } from '../schemas';
+import { createOrderSchema, placeOrderSchema } from '../schemas';
 import { PaginationT } from './common.type';
 
 
@@ -15,29 +15,5 @@ export type GetAllOrdersResT = {
 	pagination: PaginationT;
 };
 
-// export type OrderShippingAddress = {
-//     firstName: string;
-//     lastName: string;
-//     street: string;
-//     city: string;
-//     province: string;
-//     postalCode: string;
-//     phone: string; 
-// }
 
-
-// export type OrderBook = {
-//     bookId: string; 
-//     quantity: number;
-//     price: number;
-// }
-
-
-// export type Order = {
-//     userId: string; 
-//     books: OrderBook[]; 
-//     totalAmount: number;
-//     shippingAddress: OrderShippingAddress; 
-//     status: 'Pending' | 'Shipped' | 'Cancelled'; 
-//     placedAt: Date; 
-// }
+export type placeOrderValidationT = z.infer<typeof placeOrderSchema>;

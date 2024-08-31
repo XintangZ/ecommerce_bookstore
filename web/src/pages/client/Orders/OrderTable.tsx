@@ -183,8 +183,7 @@ const OrderTable: React.FC<OrderTableProps> = ({ orders, setOrders, open, setOpe
                                                     </TableHead>
                                                     <TableBody>
                                                         {order.books.map(book => {
-                                                            console.log(book); 
-                                                            console.log(book.bookId); 
+                                                            
 
                                                             return (
                                                                 <TableRow key={book.bookId._id}>
