@@ -15,25 +15,27 @@ import {
   IconButton,
 } from '@mui/material';
 import { Navigate, useNavigate } from 'react-router-dom';
-import { fetchCart, useUpdateCart } from '../../../services';
+import { fetchCart, useUpdateCartItem } from '../../../services';
 import { LinkRouter, Loading } from '../../../components';
 import { BookT, CartItemT } from '../../../types';
 import { Add, Remove } from '@mui/icons-material';
-import { useCart } from '../../../contexts';
+import { useAuth, useCart } from '../../../contexts';
+import { getCartItemFromLocalStorage } from '../../../utils';
 
 
 export function ShoppingCart() {
   const navigate = useNavigate();
-  const token = localStorage.getItem('token');
+  const { auth } = useAuth();
   const [cart, setCart] = useState<CartItemT[]>([]);
   const [isPending, setIsPending] = useState(true);
   const [isError, setIsError] = useState(false);
-  const { addToCartAndUpdateServer, removeFromCart } = useCart();
-  const updateCartMutation = useUpdateCart(token || '');
+  const { addToCartAndUpdateServer, removeFromCart, setCartListAndCount } = useCart();
+  const updateCartMutation = useUpdateCartItem(auth?.token as string);
+  const [isDisabled, setIsDisabled] = useState(false);
 
   useEffect(() => {
-    if (token) {
-      fetchCart(token)
+    if (auth) {
+      fetchCart(auth?.token)
         .then(data => {
           setCart(data.items);
           setIsPending(false);
@@ -43,10 +45,18 @@ export function ShoppingCart() {
           setIsPending(false);
         });
     } else {
+      const items = getCartItemFromLocalStorage();
+      setCartListAndCount(items);
+      setCart(items);
       setIsPending(false);
-      setIsError(true);
     }
-  }, []);
+  }, [auth, setCartListAndCount]);
+
+  useEffect(() => {
+    // Calculate subtotal and update the isDisabled state
+    const total = subtotal(cart);
+    setIsDisabled(total === 0);
+  }, [cart]);
 
   const handleQuantityChange = (bookId: string, quantity: number, stock: number) => {
     if (quantity === 0) {
@@ -63,13 +73,9 @@ export function ShoppingCart() {
   };
 
   const removeFromCartAndUpdateServer = async (book: BookT) => {
-    const newItem: CartItemT = {
-      bookId: book,
-      quantity: 1,
-    };
-    removeFromCart(newItem);
+    removeFromCart({ bookId: book, quantity: 1 });
 
-    if (token) {
+    if (auth) {
       try {
         await updateCartMutation.mutateAsync({
           bookId: book._id,
@@ -99,6 +105,14 @@ export function ShoppingCart() {
   function priceRow(qty: number, unit: number) {
     return qty * unit;
   }
+
+  const handleCheckout = () => {
+    if (!auth) {
+      navigate('/login');
+    } else {
+      navigate('/cart/checkout');
+    }
+  };
 
   return (
     <Stack gap={2}>
@@ -193,7 +207,12 @@ export function ShoppingCart() {
         </Table>
       </TableContainer>
 
-      <Button variant="contained" color="primary" onClick={() => navigate('/cart/checkout')} sx={{ alignSelf: 'center' }}>
+      <Button
+        variant="contained"
+        color="primary"
+        onClick={handleCheckout}
+        sx={{ alignSelf: 'center' }}
+        disabled={isDisabled}>
         Proceed to Checkout
       </Button>
     </Stack>

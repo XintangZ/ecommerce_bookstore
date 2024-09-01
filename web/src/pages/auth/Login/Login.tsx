@@ -8,6 +8,7 @@ import { useAuth, useCart } from '../../../contexts';
 import { LoginReqSchema } from '../../../schemas';
 import { fetchCart, useLogin } from '../../../services';
 import { LoginReqT } from '../../../types';
+import { getCartItemFromLocalStorage } from '../../../utils';
 
 export function Login() {
 	const [backendError, setBackendError] = useState<string | null>(null);
@@ -22,26 +23,20 @@ export function Login() {
 
 	const navigate = useNavigate();
 	const { login } = useAuth();
-	const { getCartList } = useCart();
+	const { setCartListAndCount } = useCart();
 	const loginMutation = useLogin();
 
 	const onSubmit: SubmitHandler<LoginReqT> = data => {
 		loginMutation.mutate(data, {
 			onSuccess: async res => {
 				login(res.data);
-
 				try {
 					const cartData = await fetchCart(res.data.token);
-					if (cartData) {
-						getCartList(cartData.items);
-					}
-				} catch (error) {
-					console.error('Failed to fetch cart data:', error);
-				}
-				try {
-					const cartData = await fetchCart(res.data.token);
-					if (cartData) {
-						getCartList(cartData.items);
+					if (cartData.items) {
+						setCartListAndCount(cartData.items);
+					} else {
+						const items = getCartItemFromLocalStorage();
+						setCartListAndCount(items);
 					}
 				} catch (error) {
 					console.error('Failed to fetch cart data:', error);

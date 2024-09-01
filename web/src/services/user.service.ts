@@ -1,24 +1,38 @@
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import axios from "axios";
 import { BACKEND_URL } from "../consts";
-import {  UserT } from "../types";
+import {  GetUserResT, UserT} from "../types";
 import { getHeaders } from "../utils";
 
-// Get user
+// Get user hook
 export const useGetUser = (token: string) => {
-  return useQuery<UserT>({
-      queryKey: ['user',],
+    return useQuery<GetUserResT>({
+      queryKey: ['user', token], // Include token to ensure uniqueness
       queryFn: async () => {
-          try {
-              const res = await axios.get<UserT>(
-                  `${BACKEND_URL}/users/me`,
-                  getHeaders(token)
-              );
-              return res.data;
-          } catch (err) {
-              console.error(err);
-              throw new Error('Failed to fetch user'); // Ensure the function never returns void
-          }
+        try {
+          const response = await axios.get<GetUserResT>(
+            `${BACKEND_URL}/users/me`,
+            getHeaders(token)
+          );
+          return response.data; // Ensure this matches UserT
+        } catch (error) {
+          console.error('Error fetching user:', error);
+          throw new Error('Failed to fetch user'); // This ensures the query fails correctly
+        }
       },
-  });
-};
+    });
+  };
+
+  //update user
+  export const useUpdateUser = (token: string) => {
+    return useMutation({
+      mutationFn: async (updatedUser: UserT) => {
+        const res = await axios.put<UserT>(
+          `${BACKEND_URL}/users/me`,
+          updatedUser,
+          getHeaders(token)
+        );
+        return res.data;
+      },
+    });
+  };

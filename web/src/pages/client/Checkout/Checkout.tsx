@@ -24,7 +24,7 @@ import {
 } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import { LinkRouter } from '../../../components';
-import { getCartFromLocalStorage } from '../../../utils';
+import { getCartItemFromLocalStorage } from '../../../utils';
 import { useGetUser } from '../../../services/user.service';
 import { useAuth } from '../../../contexts';
 import { enqueueSnackbar } from 'notistack';
@@ -87,7 +87,7 @@ export function Checkout() {
   const [phoneNumberError, setPhoneNumberError] = useState<string | null>(null);
   const [postalCodeError, setPostalCodeError] = useState<string | null>(null);
 
-  const cart = getCartFromLocalStorage();
+  const cart = getCartItemFromLocalStorage();
 
   const shippingCosts = {
     standard: 5.99, // Standard Shipping 3-4 days
@@ -100,10 +100,10 @@ export function Checkout() {
     if (userData) {
       setAddress({
         ...address,
-        street: userData.address?.street || '',
-        city: userData.address?.city || '',
-        postalCode: userData.address?.postalCode || '',
-        province: userData.address?.province || ''
+        street: userData.data.address?.street || '',
+        city: userData.data.address?.city || '',
+        postalCode: userData.data.address?.postalCode || '',
+        province: userData.data.address?.province || ''
       });
     }
   }, [userData]);
@@ -334,7 +334,7 @@ const handleSubmit = async () => {
       <Paper sx={{ p: 3 }}>
         <Typography variant="h6">Shipping Method</Typography>
         <RadioGroup value={shippingMethod} onChange={handleShippingChange}>
-          {subtotal >= 100 ? <FormControlLabel
+          {subtotal >= amountFreeShipping ? <FormControlLabel
             value="standard"
             control={<Radio />}
             label="Free Shipping (3-4 days) - $0"
@@ -387,7 +387,7 @@ const handleSubmit = async () => {
                 <Typography>Total before tax:</Typography>
               </TableCell>
               <TableCell align="right">
-                <Typography>${subtotal}</Typography>
+                <Typography>${subtotal.toFixed(2)}</Typography>
               </TableCell>
             </TableRow>
             <TableRow>
