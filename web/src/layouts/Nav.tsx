@@ -23,6 +23,7 @@ import {
 } from '@mui/material';
 import * as React from 'react';
 import { useNavigate } from 'react-router-dom';
+import { SearchBar } from '../components';
 import { useAuth, useCart } from '../contexts';
 import { getCartItemFromLocalStorage } from '../utils';
 
@@ -117,15 +118,19 @@ export function Nav() {
 					</Box>
 
 					<Stack sx={{ flexGrow: 0, flexDirection: 'row', gap: 2 }}>
-						{!isAdmin && (
-							<Tooltip title='Cart'>
-								<IconButton size='large' color='inherit' onClick={() => navigate('/cart')}>
-									<Badge badgeContent={cartItemCount} color='error'>
-										<ShoppingCartIcon />
-									</Badge>
-								</IconButton>
-							</Tooltip>
-						)}
+						<Stack direction='row'>
+							<SearchBar />
+
+							{!isAdmin && (
+								<Tooltip title='Cart'>
+									<IconButton size='large' color='inherit' onClick={() => navigate('/cart')}>
+										<Badge badgeContent={cartItemCount} color='error'>
+											<ShoppingCartIcon />
+										</Badge>
+									</IconButton>
+								</Tooltip>
+							)}
+						</Stack>
 
 						<Tooltip title={auth?.user.username || 'Login'}>
 							<IconButton onClick={handleOpenUserMenu} sx={{ p: 0 }}>
