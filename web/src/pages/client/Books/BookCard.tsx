@@ -41,11 +41,11 @@ export function BookCard({ book }: PropsT) {
 						{book.title}
 					</Typography>
 				</LinkRouter>
-				<Typography color='text.secondary'>
-					<Typography variant='subtitle1' noWrap>
-						{book.author}
-					</Typography>
+
+				<Typography variant='subtitle1' color='text.secondary' noWrap>
+					{book.author}
 				</Typography>
+
 				<Typography variant='h6' color={red[600]}>
 					${book.price.toFixed(2)}
 				</Typography>
