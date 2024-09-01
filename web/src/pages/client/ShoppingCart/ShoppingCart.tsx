@@ -50,7 +50,7 @@ export function ShoppingCart() {
       setCart(items);
       setIsPending(false);
     }
-  }, [auth, setCartListAndCount]);
+  }, [auth]);
 
   useEffect(() => {
     // Calculate subtotal and update the isDisabled state

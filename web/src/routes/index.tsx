@@ -14,6 +14,7 @@ import { Checkout } from '../pages/client/Checkout/Checkout';
 import { GuestRoute } from './GuestRoute';
 import { ProtectedRoute } from './ProtectedRoute';
 import { Profile } from '../pages/client/Profile/Profile';
+import { Wishlist } from '../pages/client/Profile/Wishlist';
 
 function AppRoutes() {
 	const { auth } = useAuth();
@@ -40,6 +41,8 @@ function AppRoutes() {
 
 				<Route element={<ProtectedRoute isAdminOnly={false} />}>
 					<Route path='profile' element={<Profile />} />
+					<Route path='wishlist' element={<Wishlist />} />
+
 				</Route>
 
 				<Route path='cart'>

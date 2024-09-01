@@ -39,6 +39,8 @@ export const updateCart = async (token: string, data: CartT[]): Promise<CartT[]>
     throw new Error('Failed to update cart');
   }
 
+};
+
 // clear cart
 export const useClearCart = (token: string) => {
   return useMutation({

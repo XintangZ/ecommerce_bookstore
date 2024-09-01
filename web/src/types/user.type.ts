@@ -16,3 +16,7 @@ export type AddressT = {
 export type GetUserResT = {
 	data: UserT
 }
+
+export type UpdateWishlist = {
+	wishlist: string[]
+}

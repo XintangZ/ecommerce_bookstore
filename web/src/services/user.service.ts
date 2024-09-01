@@ -1,7 +1,7 @@
 import { useMutation, useQuery } from "@tanstack/react-query";
 import axios from "axios";
 import { BACKEND_URL } from "../consts";
-import {  GetUserResT, UserT} from "../types";
+import {  GetUserResT, UpdateWishlist, UserT} from "../types";
 import { getHeaders } from "../utils";
 
 // Get user hook
@@ -30,6 +30,20 @@ export const useGetUser = (token: string) => {
         const res = await axios.put<UserT>(
           `${BACKEND_URL}/users/me`,
           updatedUser,
+          getHeaders(token)
+        );
+        return res.data;
+      },
+    });
+  };
+
+ //update user
+ export const useUpdateWishlist = (token: string) => {
+    return useMutation({
+      mutationFn: async (updatedWishlist: UpdateWishlist) => {
+        const res = await axios.put<UpdateWishlist>(
+          `${BACKEND_URL}/users/me/wishlist`,
+          updatedWishlist,
           getHeaders(token)
         );
         return res.data;

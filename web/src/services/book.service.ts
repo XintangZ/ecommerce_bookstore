@@ -76,6 +76,12 @@ export const useGetBookById = (bookId: string) => {
 	});
 };
 
+// get book
+export const fetchBook = async (bookId: string) => {
+  const response = await axios.get<GetBookByIdResT>(`${BACKEND_URL}/books/${bookId}`);
+  return response.data;
+};
+
 // create a book
 export const useCreateBook = (token: string) => {
 	return useMutation({
