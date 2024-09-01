@@ -1,8 +1,8 @@
 import bcrypt from 'bcrypt';
-import { NextFunction, Request, Response } from 'express';
+import { NextFunction, query, Request, Response } from 'express';
 import mongoose from 'mongoose';
 import { z } from 'zod';
-import { User, Cart } from '../models/index';
+import { User, Cart, Book } from '../models/index';
 import { createUserSchema, updateUserSchema, updateWishlistSchema } from '../schema';
 import jwt from 'jsonwebtoken';
 
@@ -167,7 +167,7 @@ const updateWishlist = async (req: Request, res: Response) => {
       existingUser.wishlist = existingUser.wishlist || [];
     }
 
-    const updatedUser = await existingUser.save();
+    await existingUser.save();
 
     res.status(200).json({ message: 'User updated successfully' });
   } catch (error) {
