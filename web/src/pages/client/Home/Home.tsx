@@ -31,7 +31,7 @@ export function Home() {
 			</Carousel>
 
 			<Divider>
-				<Typography variant='h6' mx={2} color='text.secondary'>
+				<Typography variant='h6' mx={2} component={'span'} color='text.secondary'>
 					New Arrival
 				</Typography>
 			</Divider>
