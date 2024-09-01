@@ -1,13 +1,16 @@
 import { Breadcrumbs, Button, CardMedia, Divider, Grid, Stack, Typography } from '@mui/material';
 import { red } from '@mui/material/colors';
+import { enqueueSnackbar } from 'notistack';
 import { Navigate, useParams } from 'react-router-dom';
-import { LinkRouter, Loading } from '../../../components';
+import { LinkRouter, Loading, WishlistBtn } from '../../../components';
 import { DEFAULT_COVER_IMG } from '../../../consts';
+import { useCart } from '../../../contexts';
 import { useGetBookById } from '../../../services/book.service';
 import { Reviews } from './Reviews';
 
 export function BookDetails() {
 	const { id: bookId = '' } = useParams<{ id: string }>();
+	const { addToCartAndUpdateServer } = useCart();
 
 	const { data, isPending, isError, isSuccess } = useGetBookById(bookId);
 
@@ -21,6 +24,14 @@ export function BookDetails() {
 
 	if (isSuccess && data) {
 		const { data: book } = data;
+
+		const handleAddToCart = async () => {
+			addToCartAndUpdateServer(book);
+			enqueueSnackbar({
+				message: `"${book.title}" added to cart`,
+				variant: 'success',
+			});
+		};
 
 		return (
 			<Stack gap={2}>
@@ -44,7 +55,7 @@ export function BookDetails() {
 							alt={book.title}
 						/>
 					</Grid>
-					<Grid item xs={12} md={8}>
+					<Grid item xs={12} md={8} sx={{ p: 2, display: 'flex', flexDirection: 'column' }}>
 						<Typography variant='h4' gutterBottom>
 							{book.title}
 						</Typography>
@@ -54,9 +65,15 @@ export function BookDetails() {
 						<Typography variant='h5' color={red[600]}>
 							${book.price.toFixed(2)}
 						</Typography>
-						<Button variant='contained' disabled={!book.stock} sx={{ mt: 2 }}>
-							{!!book.stock ? `Add to Cart` : 'Out of Stock'}
-						</Button>
+
+						<Stack gap={2} mt={2} sx={{ flexGrow: 1, flexDirection: 'column-reverse' }}>
+							<Stack direction='row' gap={2} mt={2}>
+								<Button variant='contained' disabled={!book.stock} onClick={handleAddToCart}>
+									{!!book.stock ? `Add to Cart` : 'Out of Stock'}
+								</Button>
+								<WishlistBtn bookTitle={book.title} />
+							</Stack>
+						</Stack>
 					</Grid>
 				</Grid>
 

@@ -1,8 +1,8 @@
-import { Button, Card, CardContent, CardMedia, Typography } from '@mui/material';
+import { Button, Card, CardContent, CardMedia, Stack, Typography } from '@mui/material';
 import { red } from '@mui/material/colors';
 import { enqueueSnackbar } from 'notistack';
 import { useMemo } from 'react';
-import { LinkRouter } from '../../../components';
+import { LinkRouter, WishlistBtn } from '../../../components';
 import { DEFAULT_COVER_IMG } from '../../../consts';
 import { useCart } from '../../../contexts';
 import { BookT } from '../../../types';
@@ -25,7 +25,7 @@ export function BookCard({ book }: PropsT) {
 	};
 
 	return (
-		<Card sx={{ height: '100%' }} variant='outlined'>
+		<Card sx={{ height: '100%', position: 'relative' }} variant='outlined'>
 			<LinkRouter to={bookDetailUri}>
 				<CardMedia
 					component='img'
@@ -53,6 +53,10 @@ export function BookCard({ book }: PropsT) {
 				<Button variant='contained' fullWidth disabled={!book.stock} sx={{ mt: 2 }} onClick={handleAddToCart}>
 					{!!book.stock ? `Add to Cart` : 'Out of Stock'}
 				</Button>
+
+				<Stack sx={{ position: 'absolute', right: 6, top: 6 }}>
+					<WishlistBtn bookTitle={book.title} />
+				</Stack>
 			</CardContent>
 		</Card>
 	);
