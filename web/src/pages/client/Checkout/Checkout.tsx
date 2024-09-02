@@ -250,7 +250,7 @@ const handleSubmit = async () => {
   }
 
   return (
-    <Stack gap={2}>
+    <Stack gap={3}>
       <Breadcrumbs aria-label="breadcrumb">
         <LinkRouter underline="hover" color="inherit" to="/">
           Home
@@ -262,7 +262,7 @@ const handleSubmit = async () => {
       </Breadcrumbs>
 
       <Paper sx={{ p: 3 }}>
-        <Typography variant="h6">Shipping Address</Typography>
+        <Typography variant="h6" mb={3}>Shipping Address</Typography>
         <Stack gap={2} mt={2}>
           <Stack direction="row" spacing={1}>
             <TextField
@@ -307,6 +307,7 @@ const handleSubmit = async () => {
             <InputLabel id="province-label">Province</InputLabel>
             <Select
               labelId="province-label"
+              label="Province"
               name="province"
               value={address.province}
               onChange={handleProvinceChange}
@@ -331,7 +332,7 @@ const handleSubmit = async () => {
       </Paper>
 
       <Paper sx={{ p: 3 }}>
-        <Typography variant="h6">Shipping Method</Typography>
+        <Typography variant="h6" mb={3}>Shipping Method</Typography>
         <RadioGroup value={shippingMethod} onChange={handleShippingChange}>
           {subtotal >= amountFreeShipping ? <FormControlLabel
             value="standard"
@@ -352,13 +353,14 @@ const handleSubmit = async () => {
       </Paper>
 
       <TableContainer component={Paper}>
+        <Typography variant="h6" p={3}>Order Summary</Typography>
         <Table sx={{ minWidth: 700 }} aria-label="spanning table">
           <TableHead>
             <TableRow>
-              <TableCell>Items</TableCell>
-              <TableCell align="right">price</TableCell>
-              <TableCell align="right">Unit</TableCell>
-              <TableCell align="right">Sum</TableCell>
+              <TableCell>Item</TableCell>
+              <TableCell align="right">Price</TableCell>
+              <TableCell align="right">Quantity</TableCell>
+              <TableCell align="right">Total</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
@@ -368,10 +370,10 @@ const handleSubmit = async () => {
                   <Typography>{item.bookId.title}</Typography>
                 </TableCell>
                 <TableCell align="right">
-                  <Typography variant="h6">${item.bookId.price}</Typography>
+                  <Typography fontWeight='bold'>${item.bookId.price}</Typography>
                 </TableCell>
                 <TableCell align="right">
-                  <Typography component="span" variant="body1" sx={{ marginX: 2 }}>
+                  <Typography component="span" sx={{ marginX: 2 }}>
                     {item.quantity}
                   </Typography>
                 </TableCell>
@@ -411,7 +413,7 @@ const handleSubmit = async () => {
             </TableRow>
             <TableRow>
               <TableCell colSpan={2}>
-                <Typography variant="h6">Total</Typography>
+                <Typography variant="h6">Order Total:</Typography>
               </TableCell>
               <TableCell align="right">
                 <Typography variant="h6">${total.toFixed(2)}</Typography>
@@ -423,7 +425,7 @@ const handleSubmit = async () => {
 
       {isError && <Alert severity="error">Please fill out all fields with valid format.</Alert>}
 
-      <Button variant="contained" color="primary" onClick={handleSubmit}>
+      <Button variant="contained" color="primary" onClick={handleSubmit} sx={{ my: 1 }}>
         Place Order
       </Button>
     </Stack>

@@ -401,7 +401,9 @@ export function BookTable() {
 											<TableCell component='th' id={labelId} scope='row' padding='none'>
 												{row.isbn}
 											</TableCell>
-											<TableCell align='left'>{row.title}</TableCell>
+											<TableCell align='left'>
+												<LinkRouter to={`/books/${row._id}`}>{row.title}</LinkRouter>
+											</TableCell>
 											<TableCell align='left'>{row.author}</TableCell>
 											<TableCell align='left' sx={{ minWidth: 110 }}>
 												{row.createdAt.toString().split('T')[0]}

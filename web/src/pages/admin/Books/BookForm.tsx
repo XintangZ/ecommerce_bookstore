@@ -72,7 +72,7 @@ export function BookForm() {
 			onSuccess: () => {
 				queryClient.invalidateQueries({ queryKey: ['books'] });
 				enqueueSnackbar(`Book ${isUpdate ? 'updated' : 'added'}`, { variant: 'success' });
-				navigate('/books', { replace: true });
+				navigate(-1);
 			},
 			onError: (err: Error) => {
 				enqueueSnackbar(`Failed to ${isUpdate ? 'update' : 'add'} book: `, { variant: 'error' });
@@ -235,7 +235,7 @@ export function BookForm() {
 
 				<Grid container spacing={2} my={3}>
 					<Grid item xs={12} md={6}>
-						<Button fullWidth variant='outlined' color='primary' onClick={() => navigate('/books')}>
+						<Button fullWidth variant='outlined' color='primary' onClick={() => navigate(-1)}>
 							Cancel
 						</Button>
 					</Grid>

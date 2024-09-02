@@ -72,7 +72,7 @@ export function Books() {
 				<Grid container spacing={2}>
 					<Grid item xs={12} sm={6} sx={{ display: 'flex', alignItems: 'center', gap: 3 }}>
 						<Typography color={'text.secondary'}>
-							{totalItems} {totalItems === 1 ? 'item' : 'items'}
+							{totalItems} {totalItems > 1 ? 'items' : 'item'}
 						</Typography>
 
 						<FormControlLabel

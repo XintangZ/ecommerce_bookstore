@@ -1,7 +1,7 @@
 import { Breadcrumbs, Button, CardMedia, Divider, Grid, Stack, Typography } from '@mui/material';
 import { red } from '@mui/material/colors';
 import { enqueueSnackbar } from 'notistack';
-import { Navigate, useParams } from 'react-router-dom';
+import { Navigate, useNavigate, useParams } from 'react-router-dom';
 import { LinkRouter, Loading, WishlistBtn } from '../../../components';
 import { DEFAULT_COVER_IMG } from '../../../consts';
 import { useAuth, useCart } from '../../../contexts';
@@ -10,6 +10,7 @@ import { Reviews } from './Reviews';
 
 export function BookDetails() {
 	const { auth } = useAuth();
+	const navigate = useNavigate();
 	const { id: bookId = '' } = useParams<{ id: string }>();
 	const { addToCartAndUpdateServer } = useCart();
 
@@ -69,10 +70,21 @@ export function BookDetails() {
 
 						<Stack gap={2} mt={2} sx={{ flexGrow: 1, flexDirection: 'column-reverse' }}>
 							<Stack direction='row' gap={2} mt={2}>
-								<Button variant='contained' disabled={!book.stock} onClick={handleAddToCart}>
-									{!!book.stock ? `Add to Cart` : 'Out of Stock'}
-								</Button>
-								{!!auth && <WishlistBtn bookTitle={book.title} bookId={book._id} />}
+								{!auth?.user.isAdmin ? (
+									<>
+										<Button variant='contained' disabled={!book.stock} onClick={handleAddToCart}>
+											{!!book.stock ? `Add to Cart` : 'Out of Stock'}
+										</Button>
+										{!!auth && <WishlistBtn bookTitle={book.title} bookId={book._id} />}
+									</>
+								) : (
+									<Button
+										variant='contained'
+										disabled={!book.stock}
+										onClick={() => navigate(`/books/edit/${book._id}`)}>
+										Edit Details
+									</Button>
+								)}
 							</Stack>
 						</Stack>
 					</Grid>

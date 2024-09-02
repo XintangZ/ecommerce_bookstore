@@ -156,23 +156,27 @@ export function Nav() {
 							}}
 							open={Boolean(anchorElUser)}
 							onClose={handleCloseUserMenu}>
-							{auth && [
-								<MenuItem
-									key='profile'
-									onClick={() => {
-										handleCloseUserMenu();
-										navigate('/profile');
-									}}>
-									<Typography textAlign='center'>Profile</Typography>
-								</MenuItem>,
-								<MenuItem
-								key='wishlist'
-								onClick={() => {
-									handleCloseUserMenu();
-									navigate('/wishlist');
-								}}>
-								<Typography textAlign='center'>Wishlist</Typography>
-							</MenuItem>,
+							{auth &&
+								!auth.user.isAdmin && [
+									<MenuItem
+										key='profile'
+										onClick={() => {
+											handleCloseUserMenu();
+											navigate('/profile');
+										}}>
+										<Typography textAlign='center'>Profile</Typography>
+									</MenuItem>,
+									<MenuItem
+										key='wishlist'
+										onClick={() => {
+											handleCloseUserMenu();
+											navigate('/wishlist');
+										}}>
+										<Typography textAlign='center'>Wishlist</Typography>
+									</MenuItem>,
+								]}
+
+							{auth && (
 								<MenuItem
 									key='logout'
 									onClick={() => {
@@ -181,8 +185,8 @@ export function Nav() {
 										resetCart();
 									}}>
 									<Typography textAlign='center'>Logout</Typography>
-								</MenuItem>,
-							]}
+								</MenuItem>
+							)}
 
 							{!auth && [
 								<MenuItem

@@ -6,6 +6,8 @@ import { getHeaders } from '../utils';
 
 // Get all orders for a user or admin with pagination
 type FilterParamsT = {
+	sortBy?: string;
+	order?: 'asc' | 'desc';
 	status?: 'Pending' | 'Shipped' | 'Cancelled';
 };
 
@@ -15,7 +17,7 @@ export const useGetAllOrders = (
 	limit: number = 10,
 	filterParams: FilterParamsT = {}
 ) => {
-	const { status } = filterParams;
+	const { sortBy = 'placedAt', order = 'asc', status } = filterParams;
 
 	const queryParams = new URLSearchParams({
 		page: page.toString(),
@@ -23,6 +25,8 @@ export const useGetAllOrders = (
 	});
 
 	Object.entries({
+		sortBy,
+		order,
 		status,
 	}).forEach(([key, value]) => {
 		if (value !== undefined) {
@@ -74,42 +78,44 @@ export const useGetOrder = (token: string, orderId: string) => {
 
 // Create a new order
 export const useCreateOrder = (token: string) => {
-    return useMutation<placeOrderValidationT, Error, placeOrderValidationT>({
-        mutationFn: async (orderData: placeOrderValidationT) => {
-            try {
-                const res = await axios.post<placeOrderValidationT>(
-                    `${BACKEND_URL}/orders/add`,
-                    orderData,
-                    getHeaders(token)
-                );
-                return res.data;
-            } catch (err) {
-                console.error(err);
-                throw new Error('Failed to create order'); // Ensure the function never returns void
-            }
-        },
-    });
+	return useMutation<placeOrderValidationT, Error, placeOrderValidationT>({
+		mutationFn: async (orderData: placeOrderValidationT) => {
+			try {
+				const res = await axios.post<placeOrderValidationT>(
+					`${BACKEND_URL}/orders/add`,
+					orderData,
+					getHeaders(token)
+				);
+				return res.data;
+			} catch (err) {
+				console.error(err);
+				throw new Error('Failed to create order'); // Ensure the function never returns void
+			}
+		},
+	});
 };
 
 export const useUpdateOrder = (token: string) => {
-    return useMutation<CreateOrderValidationT, Error, { orderId: string; status: 'Pending' | 'Shipped' | 'Cancelled' }>({
-        mutationFn: async ({ orderId, status }) => {
-            if (!orderId) {
-                console.error('Order ID is missing or invalid:', orderId);
-                throw new Error('Order ID is missing or invalid');
-            }
+	return useMutation<CreateOrderValidationT, Error, { orderId: string; status: 'Pending' | 'Shipped' | 'Cancelled' }>(
+		{
+			mutationFn: async ({ orderId, status }) => {
+				if (!orderId) {
+					console.error('Order ID is missing or invalid:', orderId);
+					throw new Error('Order ID is missing or invalid');
+				}
 
-            try {
-                const res = await axios.put<CreateOrderValidationT>(
-                    `${BACKEND_URL}/orders/update/${orderId}`,
-                    { status },
-                    getHeaders(token)
-                );
-                return res.data;
-            } catch (err) {
-                console.error(err);
-                throw new Error('Failed to update order');
-            }
-        },
-    });
+				try {
+					const res = await axios.put<CreateOrderValidationT>(
+						`${BACKEND_URL}/orders/update/${orderId}`,
+						{ status },
+						getHeaders(token)
+					);
+					return res.data;
+				} catch (err) {
+					console.error(err);
+					throw new Error('Failed to update order');
+				}
+			},
+		}
+	);
 };
