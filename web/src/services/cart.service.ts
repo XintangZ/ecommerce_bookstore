@@ -38,6 +38,8 @@ export const updateCart = async (token: string, data: CartT[]): Promise<CartT[]>
 	}
 };
 
+};
+
 // clear cart
 export const useClearCart = (token: string) => {
 	return useMutation({
