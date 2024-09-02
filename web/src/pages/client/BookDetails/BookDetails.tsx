@@ -71,7 +71,7 @@ export function BookDetails() {
 								<Button variant='contained' disabled={!book.stock} onClick={handleAddToCart}>
 									{!!book.stock ? `Add to Cart` : 'Out of Stock'}
 								</Button>
-								<WishlistBtn bookTitle={book.title} />
+								<WishlistBtn bookTitle={book.title} bookId={book._id} />
 							</Stack>
 						</Stack>
 					</Grid>

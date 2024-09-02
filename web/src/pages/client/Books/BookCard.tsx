@@ -55,7 +55,7 @@ export function BookCard({ book }: PropsT) {
 				</Button>
 
 				<Stack sx={{ position: 'absolute', right: 6, top: 6 }}>
-					<WishlistBtn bookTitle={book.title} />
+					<WishlistBtn bookTitle={book.title} bookId={book._id} />
 				</Stack>
 			</CardContent>
 		</Card>

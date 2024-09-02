@@ -15,7 +15,7 @@ import {
 } from '@mui/material';
 import { useAuth } from '../../../contexts';
 import { AddressT, UserT } from '../../../types';
-import { useGetUser, useUpdateUser } from '../../../services/user.service';
+import { useGetUser, useUpdateUser } from '../../../services';
 import { Loading } from '../../../components';
 import { Navigate, useNavigate } from 'react-router-dom';
 import { enqueueSnackbar } from 'notistack';

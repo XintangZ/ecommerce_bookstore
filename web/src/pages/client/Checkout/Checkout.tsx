@@ -25,10 +25,9 @@ import {
 import { useNavigate } from 'react-router-dom';
 import { LinkRouter } from '../../../components';
 import { getCartItemFromLocalStorage } from '../../../utils';
-import { useGetUser } from '../../../services/user.service';
 import { useAuth } from '../../../contexts';
 import { enqueueSnackbar } from 'notistack';
-import { useCreateOrder, useClearCart } from '../../../services';
+import { useCreateOrder, useClearCart, useGetUser } from '../../../services';
 import { useCart } from '../../../contexts';
 
 const provinces = [

@@ -166,6 +166,14 @@ export function Nav() {
 									<Typography textAlign='center'>Profile</Typography>
 								</MenuItem>,
 								<MenuItem
+								key='wishlist'
+								onClick={() => {
+									handleCloseUserMenu();
+									navigate('/wishlist');
+								}}>
+								<Typography textAlign='center'>Wishlist</Typography>
+							</MenuItem>,
+								<MenuItem
 									key='logout'
 									onClick={() => {
 										handleCloseUserMenu();
