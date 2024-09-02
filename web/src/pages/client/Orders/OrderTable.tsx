@@ -16,11 +16,15 @@ import {
     DialogContentText,
     DialogTitle,
     Typography,
+    Paper,
+    Box,
+    Stack,
 } from '@mui/material';
 import { KeyboardArrowDown, KeyboardArrowUp } from '@mui/icons-material';
 import { useUpdateOrder, useUpdateMultipleBookStocks } from '../../../services';
 import { enqueueSnackbar } from 'notistack';
-import { LinkRouter } from '../../../components';
+import { BookReviewDialog, LinkRouter } from '../../../components';
+import { green, yellow } from '@mui/material/colors';
 
 interface OrderTableProps {
     orders: CreateOrderValidationT[];
@@ -115,7 +119,7 @@ const OrderTable: React.FC<OrderTableProps> = ({ orders, setOrders, open, setOpe
                     You haven't placed any order!
                 </Typography>
             ) : (
-                <TableContainer>
+                <TableContainer component={Paper} variant='outlined'>
                     <Table>
                         <TableHead>
                             <TableRow>
@@ -131,7 +135,7 @@ const OrderTable: React.FC<OrderTableProps> = ({ orders, setOrders, open, setOpe
                         <TableBody>
                             {orders.map(order => (
                                 <React.Fragment key={order._id}>
-                                    <TableRow>
+                                    <TableRow sx={{ '& > *': { borderBottom: 'unset' } }}>
                                         <TableCell>
                                             <IconButton
                                                 size="small"
@@ -143,12 +147,24 @@ const OrderTable: React.FC<OrderTableProps> = ({ orders, setOrders, open, setOpe
                                         <TableCell>{order._id}</TableCell>
                                         <TableCell>${order.totalAmount.toFixed(2)}</TableCell>
                                         <TableCell>{order.placedAt ? new Date(order.placedAt).toLocaleString() : 'N/A'}</TableCell>
-                                        <TableCell>{order.status}</TableCell>
+                                        <TableCell
+                                            sx={{
+                                                fontWeight: 'bold',
+                                                color: order.status === 'Pending'
+                                                    ? yellow[800]
+                                                    : order.status === 'Shipped'
+                                                    ? green[700]
+                                                    : 'text.secondary',
+                                            }}>
+                                            {order.status}
+                                        </TableCell>
                                         <TableCell>{formatShippingAddress(order.shippingAddress)}</TableCell>
                                         <TableCell>
                                             {order.status === 'Pending' && (
-                                                <>
+                                                <Stack gap={1} justifyContent='center'>
                                                     <Button
+                                                        size='small'
+                                                        fullWidth
                                                         variant="outlined"
                                                         color="error"
                                                         onClick={() => handleCancelClick(order._id)}
@@ -157,49 +173,58 @@ const OrderTable: React.FC<OrderTableProps> = ({ orders, setOrders, open, setOpe
                                                     </Button>
                                                     {isAdmin && (
                                                         <Button
+                                                            size='small'
+                                                            fullWidth
                                                             variant="outlined"
                                                             color="primary"
                                                             onClick={() => handleShipClick(order._id)}
-                                                            style={{ marginLeft: '10px' }}
                                                         >
                                                             Ship
                                                         </Button>
                                                     )}
-                                                </>
+                                                </Stack>
                                             )}
                                         </TableCell>
                                     </TableRow>
                                     <TableRow>
                                         <TableCell style={{ paddingBottom: 0, paddingTop: 0 }} colSpan={7}>
                                             <Collapse in={open === order._id} timeout="auto" unmountOnExit>
-                                                <Table size="small" aria-label="order details">
-                                                    <TableHead>
-                                                        <TableRow>
-                                                            {isAdmin && <TableCell>Book ISBN</TableCell>}
-                                                            <TableCell>Book Title</TableCell>
-                                                            <TableCell>Quantity</TableCell>
-                                                            <TableCell>Price</TableCell>
-                                                        </TableRow>
-                                                    </TableHead>
-                                                    <TableBody>
-                                                        {order.books.map(book => {
-                                                            
-
-                                                            return (
-                                                                <TableRow key={book.bookId._id}>
-                                                                    {isAdmin && <TableCell>{book.bookId.isbn}</TableCell>}
-                                                                    <TableCell>
-                                                                        <LinkRouter noWrap underline="hover" to={`/books/${book.bookId._id}`}>
-                                                                            {book.bookId.title}
-                                                                        </LinkRouter>
-                                                                    </TableCell>
-                                                                    <TableCell>{book.quantity}</TableCell>
-                                                                    <TableCell>${book.price.toFixed(2)}</TableCell>
-                                                                </TableRow>
-                                                            );
-                                                        })}
-                                                    </TableBody>
-                                                </Table>
+                                                <Box sx={{ margin: 1 }}>
+                                                    <Typography variant="h6" gutterBottom component="div">
+                                                        Order Details
+                                                    </Typography>
+                                                    <Table size="small" aria-label="order details">
+                                                        <TableHead>
+                                                            <TableRow>
+                                                                {isAdmin && <TableCell>Book ISBN</TableCell>}
+                                                                <TableCell>Book Title</TableCell>
+                                                                <TableCell>Quantity</TableCell>
+                                                                <TableCell colSpan={2}>Price</TableCell>
+                                                            </TableRow>
+                                                        </TableHead>
+                                                        <TableBody>
+                                                            {order.books.map(book => {
+                                                                return (
+                                                                    <TableRow key={book.bookId._id}>
+                                                                        {isAdmin && <TableCell>{book.bookId.isbn}</TableCell>}
+                                                                        <TableCell>
+                                                                            <LinkRouter noWrap underline="hover" to={`/books/${book.bookId._id}`}>
+                                                                                {book.bookId.title}
+                                                                            </LinkRouter>
+                                                                        </TableCell>
+                                                                        <TableCell>{book.quantity}</TableCell>
+                                                                        <TableCell>${book.price.toFixed(2)}</TableCell>
+                                                                        {!isAdmin && order.status === 'Shipped' &&
+                                                                            <TableCell width={170}>
+                                                                                <BookReviewDialog bookId={book.bookId._id} bookTitle={book.bookId.title} />
+                                                                            </TableCell>
+                                                                        }
+                                                                    </TableRow>
+                                                                );
+                                                            })}
+                                                        </TableBody>
+                                                    </Table>
+                                                </Box>
                                             </Collapse>
                                         </TableCell>
                                     </TableRow>

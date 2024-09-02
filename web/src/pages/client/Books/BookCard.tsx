@@ -4,7 +4,7 @@ import { enqueueSnackbar } from 'notistack';
 import { useMemo } from 'react';
 import { LinkRouter, WishlistBtn } from '../../../components';
 import { DEFAULT_COVER_IMG } from '../../../consts';
-import { useCart } from '../../../contexts';
+import { useAuth, useCart } from '../../../contexts';
 import { BookT } from '../../../types';
 
 type PropsT = {
@@ -12,6 +12,7 @@ type PropsT = {
 };
 
 export function BookCard({ book }: PropsT) {
+	const { auth } = useAuth();
 	const { addToCartAndUpdateServer } = useCart();
 	const bookDetailUri = useMemo(() => `/books/${book._id}`, [book]);
 	const bookImg = `https://covers.openlibrary.org/b/isbn/${book.isbn}-M.jpg`;
@@ -54,9 +55,11 @@ export function BookCard({ book }: PropsT) {
 					{!!book.stock ? `Add to Cart` : 'Out of Stock'}
 				</Button>
 
-				<Stack sx={{ position: 'absolute', right: 6, top: 6 }}>
-					<WishlistBtn bookTitle={book.title} bookId={book._id} />
-				</Stack>
+				{auth && (
+					<Stack sx={{ position: 'absolute', right: 6, top: 6 }}>
+						<WishlistBtn bookTitle={book.title} bookId={book._id} />
+					</Stack>
+				)}
 			</CardContent>
 		</Card>
 	);

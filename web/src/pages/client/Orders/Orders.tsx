@@ -3,14 +3,15 @@ import {
     Alert,
     Breadcrumbs,
     FormControl,
+    Grid,
     InputLabel,
     MenuItem,
     Select,
     Stack,
     Typography,
 } from '@mui/material';
-import { Navigate } from 'react-router-dom';
-import { LinkRouter, Loading, MuiPagination } from '../../../components';
+import { Navigate, useSearchParams } from 'react-router-dom';
+import { FilterChips, LinkRouter, Loading, MuiPagination, OrderStatusSelect } from '../../../components';
 import { useGetAllOrders } from '../../../services';
 import OrderTable from './OrderTable'; // Import the new component
 import { GetAllOrdersResT , } from '../../../types';
@@ -24,9 +25,12 @@ export function Orders() {
     const [open, setOpen] = useState<string | null>(null);
     const [orders, setOrders] = useState<CreateOrderValidationT[]>([]); // Define orders state
 
+    const [searchParams, _setSearchParams] = useSearchParams();
+	const params = Object.fromEntries(searchParams.entries());
+
     const limit = 10;
     const token = localStorage.getItem('token');
-    const { data, isPending, isError, isSuccess } = useGetAllOrders(token || '', page, limit);
+    const { data, isPending, isError, isSuccess } = useGetAllOrders(token || '', page, limit, { ...params});
 
     useEffect(() => {
         setPage(1);
@@ -75,28 +79,42 @@ export function Orders() {
                     <Typography color='text.primary'>Orders</Typography>
                 </Breadcrumbs>
 
-                <Stack direction='row' justifyContent='space-between'>
-                    <Typography color={'text.secondary'}>
-                        {totalItems} {totalItems === 1 ? 'order' : 'orders'}
-                    </Typography>
+                <FilterChips />
 
-                    <FormControl variant='outlined' size='small' sx={{ width: 150 }}>
-                        <InputLabel>Sort By</InputLabel>
-                        <Select
-                            value={`${sortBy}_${order}`}
-                            onChange={e => {
-                                const [field, sortOrder] = (e.target.value as string).split('_');
-                                setSortBy(field);
-                                setOrder(sortOrder as 'asc' | 'desc');
-                            }}
-                            label='Sort By'>
-                            <MenuItem value='date_asc'>Date (Asc)</MenuItem>
-                            <MenuItem value='date_desc'>Date (Desc)</MenuItem>
-                            <MenuItem value='status_asc'>Status (Asc)</MenuItem>
-                            <MenuItem value='status_desc'>Status (Desc)</MenuItem>
-                        </Select>
-                    </FormControl>
-                </Stack>
+				<Grid container spacing={2}>
+					<Grid item xs={12} sm={6}>
+						<Typography color={'text.secondary'}>
+							{totalItems} {totalItems === 1 ? 'order' : 'orders'}
+						</Typography>
+					</Grid>
+
+					<Grid item xs={12} sm={6}>
+						<Grid container spacing={2} sx={{ display: 'flex', justifyContent: 'end' }}>
+							<Grid item xs={6} md={5} lg={4}>
+								<OrderStatusSelect size='small' displayEmpty fullWidth />
+							</Grid>
+
+							<Grid item xs={6} md={5} lg={4}>
+								<FormControl variant='outlined' size='small' fullWidth>
+                                    <InputLabel>Sort By</InputLabel>
+                                    <Select
+                                        value={`${sortBy}_${order}`}
+                                        onChange={e => {
+                                            const [field, sortOrder] = (e.target.value as string).split('_');
+                                            setSortBy(field);
+                                            setOrder(sortOrder as 'asc' | 'desc');
+                                        }}
+                                        label='Sort By'>
+                                        <MenuItem value='date_asc'>Date (Asc)</MenuItem>
+                                        <MenuItem value='date_desc'>Date (Desc)</MenuItem>
+                                        <MenuItem value='status_asc'>Status (Asc)</MenuItem>
+                                        <MenuItem value='status_desc'>Status (Desc)</MenuItem>
+                                    </Select>
+								</FormControl>
+							</Grid>
+						</Grid>
+					</Grid>
+                </Grid>
 
                 <OrderTable orders={sortedOrders} setOrders={setOrders} open={open} setOpen={setOpen} />
 

@@ -6,4 +6,5 @@ export * from './common/MuiPagination';
 export * from './common/UserAvatar';
 export * from './common/WishlistBtn';
 export * from './FilterChips';
+export * from './OrderStatusSelect';
 export * from './SearchBar';

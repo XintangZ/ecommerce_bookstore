@@ -4,11 +4,12 @@ import { enqueueSnackbar } from 'notistack';
 import { Navigate, useParams } from 'react-router-dom';
 import { LinkRouter, Loading, WishlistBtn } from '../../../components';
 import { DEFAULT_COVER_IMG } from '../../../consts';
-import { useCart } from '../../../contexts';
+import { useAuth, useCart } from '../../../contexts';
 import { useGetBookById } from '../../../services/book.service';
 import { Reviews } from './Reviews';
 
 export function BookDetails() {
+	const { auth } = useAuth();
 	const { id: bookId = '' } = useParams<{ id: string }>();
 	const { addToCartAndUpdateServer } = useCart();
 
@@ -71,7 +72,7 @@ export function BookDetails() {
 								<Button variant='contained' disabled={!book.stock} onClick={handleAddToCart}>
 									{!!book.stock ? `Add to Cart` : 'Out of Stock'}
 								</Button>
-								<WishlistBtn bookTitle={book.title} bookId={book._id} />
+								{!!auth && <WishlistBtn bookTitle={book.title} bookId={book._id} />}
 							</Stack>
 						</Stack>
 					</Grid>
