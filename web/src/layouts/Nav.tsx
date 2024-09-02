@@ -23,7 +23,7 @@ import {
 } from '@mui/material';
 import * as React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { SearchBar } from '../components';
+import { SearchBar, UserAvatar } from '../components';
 import { useAuth, useCart } from '../contexts';
 import { getCartItemFromLocalStorage } from '../utils';
 
@@ -117,7 +117,7 @@ export function Nav() {
 						</Button>
 					</Box>
 
-					<Stack sx={{ flexGrow: 0, flexDirection: 'row', gap: 2 }}>
+					<Stack sx={{ flexGrow: 0, flexDirection: 'row', gap: 2, alignItems: 'center' }}>
 						<Stack direction='row'>
 							<SearchBar />
 
@@ -134,7 +134,11 @@ export function Nav() {
 
 						<Tooltip title={auth?.user.username || 'Login'}>
 							<IconButton onClick={handleOpenUserMenu} sx={{ p: 0 }}>
-								<Avatar alt={auth?.user.username} src='/static/images/avatar/2.jpg' />
+								{!!auth?.user.username ? (
+									<UserAvatar userName={auth.user.username} />
+								) : (
+									<Avatar alt='' src='/static/images/avatar/2.jpg' />
+								)}
 							</IconButton>
 						</Tooltip>
 						<Menu
