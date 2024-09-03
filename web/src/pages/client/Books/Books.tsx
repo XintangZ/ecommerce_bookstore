@@ -12,8 +12,8 @@ import {
 	Typography,
 } from '@mui/material';
 import { useEffect, useState } from 'react';
-import { Navigate } from 'react-router-dom';
-import { LinkRouter, Loading, MuiPagination } from '../../../components';
+import { Navigate, useSearchParams } from 'react-router-dom';
+import { CategorySelect, FilterChips, LinkRouter, Loading, MuiPagination } from '../../../components';
 import { useGetBooks } from '../../../services';
 import { BookCard } from './BookCard';
 
@@ -21,18 +21,28 @@ export function Books() {
 	const [page, setPage] = useState(1);
 	const [sortBy, setSortBy] = useState('createdAt');
 	const [order, setOrder] = useState<'asc' | 'desc'>('desc');
-	const [isAvailable, setIsAvailable] = useState<boolean | undefined>();
+	const [searchParams, setSearchParams] = useSearchParams();
+	const params = Object.fromEntries(searchParams.entries());
 
 	const limit = 12;
 	const { data, isPending, isError, isSuccess } = useGetBooks(page, limit, {
 		sortBy,
 		order,
-		isAvailable,
+		...params,
 	});
 
 	useEffect(() => {
 		setPage(1);
-	}, [limit, sortBy, order, isAvailable]);
+	}, [limit, sortBy, order]);
+
+	const onAvailabilityChange = (_event: React.ChangeEvent<HTMLInputElement>, checked: boolean) => {
+		if (checked) {
+			searchParams.set('isAvailable', 'true');
+		} else {
+			searchParams.delete('isAvailable');
+		}
+		setSearchParams(searchParams);
+	};
 
 	if (isPending) return <Loading />;
 
@@ -57,60 +67,78 @@ export function Books() {
 					<Typography color='text.primary'>Books</Typography>
 				</Breadcrumbs>
 
-				<Stack direction='row' justifyContent='space-between'>
-					<Stack direction='row' gap={{ xs: 2, sm: 3 }} alignItems='center'>
+				<FilterChips />
+
+				<Grid container spacing={2}>
+					<Grid item xs={12} sm={6} sx={{ display: 'flex', alignItems: 'center', gap: 3 }}>
 						<Typography color={'text.secondary'}>
-							{totalItems} {totalItems === 1 ? 'item' : 'items'}
+							{totalItems} {totalItems > 1 ? 'items' : 'item'}
 						</Typography>
 
 						<FormControlLabel
 							control={
 								<Checkbox
 									size='small'
-									checked={isAvailable || false}
-									onChange={e =>
-										e.target.checked ? setIsAvailable(true) : setIsAvailable(undefined)
-									}
+									checked={!!searchParams.get('isAvailable')}
+									onChange={onAvailabilityChange}
 								/>
 							}
 							label={<Typography variant='body2'>In Stock</Typography>}
 						/>
-					</Stack>
+					</Grid>
 
-					<FormControl variant='outlined' size='small' sx={{ width: 150 }}>
-						<InputLabel>Sort By</InputLabel>
-						<Select
-							value={`${sortBy}_${order}`}
-							onChange={e => {
-								const [field, order] = (e.target.value as string).split('_');
-								setSortBy(field);
-								setOrder(order as 'asc' | 'desc');
-							}}
-							label='Sort By'>
-							<MenuItem value='createdAt_desc'>New Arrival</MenuItem>
-							<MenuItem value='title_asc'>Title (Asc)</MenuItem>
-							<MenuItem value='title_desc'>Title (Desc)</MenuItem>
-							<MenuItem value='price_asc'>Price (Asc)</MenuItem>
-							<MenuItem value='price_desc'>Price (Desc)</MenuItem>
-						</Select>
-					</FormControl>
-				</Stack>
+					<Grid item xs={12} sm={6}>
+						<Grid container spacing={2} sx={{ display: 'flex', justifyContent: 'end' }}>
+							<Grid item xs={6} md={5} lg={4}>
+								<CategorySelect size='small' displayEmpty fullWidth />
+							</Grid>
 
-				<Grid container spacing={3}>
-					{books.map(book => (
-						<Grid item key={book.isbn} xs={12} sm={6} md={4} lg={3} zeroMinWidth>
-							<BookCard book={book} />
+							<Grid item xs={6} md={5} lg={4}>
+								<FormControl variant='outlined' size='small' fullWidth>
+									<InputLabel>Sort By</InputLabel>
+									<Select
+										value={`${sortBy}_${order}`}
+										onChange={e => {
+											const [field, order] = (e.target.value as string).split('_');
+											setSortBy(field);
+											setOrder(order as 'asc' | 'desc');
+										}}
+										label='Sort By'>
+										<MenuItem value='createdAt_desc'>New Arrival</MenuItem>
+										<MenuItem value='title_asc'>Title (Asc)</MenuItem>
+										<MenuItem value='title_desc'>Title (Desc)</MenuItem>
+										<MenuItem value='price_asc'>Price (Asc)</MenuItem>
+										<MenuItem value='price_desc'>Price (Desc)</MenuItem>
+									</Select>
+								</FormControl>
+							</Grid>
 						</Grid>
-					))}
+					</Grid>
 				</Grid>
 
-				{totalPages > 1 && (
-					<MuiPagination
-						count={totalPages}
-						page={page}
-						setPage={setPage}
-						sx={{ alignSelf: 'center', my: { xs: 2, sm: 3, md: 4 } }}
-					/>
+				{!!books.length ? (
+					<>
+						<Grid container spacing={3}>
+							{books.map(book => (
+								<Grid item key={book.isbn} xs={12} sm={6} md={4} lg={3} zeroMinWidth>
+									<BookCard book={book} />
+								</Grid>
+							))}
+						</Grid>
+
+						{totalPages > 1 && (
+							<MuiPagination
+								count={totalPages}
+								page={page}
+								setPage={setPage}
+								sx={{ alignSelf: 'center', my: { xs: 2, sm: 3, md: 4 } }}
+							/>
+						)}
+					</>
+				) : (
+					<Typography variant='h6' align='center' sx={{ my: 4, color: 'text.secondary' }}>
+						No result.
+					</Typography>
 				)}
 			</Stack>
 		);

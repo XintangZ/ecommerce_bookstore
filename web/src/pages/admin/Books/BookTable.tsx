@@ -10,7 +10,6 @@ import {
 	Box,
 	Breadcrumbs,
 	Checkbox,
-	Chip,
 	Collapse,
 	Grid,
 	IconButton,
@@ -38,12 +37,11 @@ import { useQueryClient } from '@tanstack/react-query';
 import { enqueueSnackbar } from 'notistack';
 import { useEffect, useState } from 'react';
 import { Navigate, useNavigate, useSearchParams } from 'react-router-dom';
-import { LinkRouter, Loading } from '../../../components';
+import { CategorySelect, FilterChips, LinkRouter, Loading } from '../../../components';
 import { LOW_STOCK_QTY } from '../../../consts';
 import { useAuth } from '../../../contexts';
-import { useDeleteMultipleBooks, useGetBooks, useGetCategories } from '../../../services';
-import { BookT, GetCategoriesResT } from '../../../types';
-import { formatCamelToSentence } from '../../../utils';
+import { useDeleteMultipleBooks, useGetBooks } from '../../../services';
+import { BookT } from '../../../types';
 import { AddStockDialog } from './components/AddStockDialog';
 
 type Order = 'asc' | 'desc';
@@ -129,9 +127,6 @@ function EnhancedTableToolbar({ totalCount, numSelected, selected, setSelected }
 	const [isFilterOpen, setIsFilterOpen] = useState(false);
 	const queryClient = useQueryClient();
 	const deleteMutation = useDeleteMultipleBooks(auth?.token as string);
-	const categories =
-		(queryClient.getQueriesData({ queryKey: ['categories'] })[0][1] as GetCategoriesResT) ||
-		({ data: [] } as GetCategoriesResT);
 
 	useEffect(() => {
 		if (!!numSelected) setIsFilterOpen(false);
@@ -163,12 +158,6 @@ function EnhancedTableToolbar({ totalCount, numSelected, selected, setSelected }
 	};
 
 	const handleEditBtnClick = () => navigate(`/books/edit/${selected[0]}`);
-
-	const handleCategoryChange = (event: SelectChangeEvent) => {
-		const categoryId = event.target.value;
-		categoryId ? searchParams.set('categoryId', categoryId) : searchParams.delete('categoryId');
-		setSearchParams(searchParams);
-	};
 
 	const handleStockLevelChange = (event: SelectChangeEvent) => {
 		searchParams.delete('isAvailable');
@@ -240,7 +229,11 @@ function EnhancedTableToolbar({ totalCount, numSelected, selected, setSelected }
 								onClick={() => {
 									setIsFilterOpen(!isFilterOpen);
 								}}>
-								<Badge badgeContent={searchParams.size} color='info'>
+								<Badge
+									badgeContent={
+										!!searchParams.get('search') ? searchParams.size - 1 : searchParams.size
+									}
+									color='info'>
 									<FilterListIcon />
 								</Badge>
 							</IconButton>
@@ -251,23 +244,7 @@ function EnhancedTableToolbar({ totalCount, numSelected, selected, setSelected }
 			<Collapse in={isFilterOpen} timeout='auto' unmountOnExit>
 				<Grid container spacing={2} px={2}>
 					<Grid item xs={6} sm={4} md={3} lg={2}>
-						<Select
-							size='small'
-							variant='standard'
-							value={searchParams.get('categoryId') || ''}
-							onChange={handleCategoryChange}
-							displayEmpty
-							fullWidth
-							inputProps={{ 'aria-label': 'Filter by category' }}>
-							<MenuItem value=''>
-								<em>All Categories</em>
-							</MenuItem>
-							{categories.data.map(category => (
-								<MenuItem key={category._id} value={category._id}>
-									{category.name}
-								</MenuItem>
-							))}
-						</Select>
+						<CategorySelect fullWidth displayEmpty variant='standard' size='small' />
 					</Grid>
 					<Grid item xs={6} sm={4} md={3} lg={2}>
 						<Select
@@ -293,61 +270,20 @@ function EnhancedTableToolbar({ totalCount, numSelected, selected, setSelected }
 }
 
 export function BookTable() {
-	const [order, setOrder] = useState<Order>('asc');
-	const [sortBy, setSortBy] = useState<keyof BookSummaryT>('title');
+	const [order, setOrder] = useState<Order>('desc');
+	const [sortBy, setSortBy] = useState<keyof BookSummaryT>('createdAt');
 	const [selected, setSelected] = useState<string[]>([]);
 	const [page, setPage] = useState(0);
 	const [rowsPerPage, setRowsPerPage] = useState(10);
-	const [searchParams, setSearchParams] = useSearchParams();
+	const [searchParams, _setSearchParams] = useSearchParams();
 
-	const { data: categories } = useGetCategories();
 	const params = Object.fromEntries(searchParams.entries());
 
-	const formatFilterChip = (searchParams: URLSearchParams) => {
-		const params = Object.fromEntries(searchParams.entries());
-		return Object.entries(params).map(([key, value]) => {
-			let label = '';
-
-			switch (key) {
-				case 'isAvailable':
-					label = value === 'true' ? 'In Stock' : 'Out of stock';
-					break;
-				case 'categoryId':
-					label = categories?.data.find(item => item._id === value)?.name || '';
-					break;
-				case 'isLowStock':
-					label = 'Low in Stock';
-					break;
-				default:
-					label = `${formatCamelToSentence(key)}: ${value}`;
-					break;
-			}
-
-			return { key, label };
-		});
-	};
-
-	const filterChips = formatFilterChip(searchParams);
-
-	const handleDeleteFilterChip = (filterKey?: string) => {
-		if (filterKey) {
-			searchParams.delete(filterKey);
-			setSearchParams(searchParams);
-		} else {
-			setSearchParams();
-		}
-		setSelected([]);
-	};
-
-	const { data, isPending, isError, isSuccess, refetch } = useGetBooks(page + 1, rowsPerPage, {
+	const { data, isPending, isError, isSuccess } = useGetBooks(page + 1, rowsPerPage, {
 		sortBy,
 		order,
 		...params,
 	});
-
-	useEffect(() => {
-		refetch();
-	}, [order, sortBy, rowsPerPage, params]);
 
 	useEffect(() => {
 		setSelected([]);
@@ -411,7 +347,7 @@ export function BookTable() {
 		const emptyRows = page > 0 && page + 1 === totalPages ? rowsPerPage - books.length : 0;
 
 		return (
-			<Box sx={{ width: '100%' }}>
+			<Stack gap={2}>
 				<Breadcrumbs aria-label='breadcrumb'>
 					<LinkRouter underline='hover' color='inherit' to='/'>
 						Home
@@ -419,24 +355,9 @@ export function BookTable() {
 					<Typography color='text.primary'>Books</Typography>
 				</Breadcrumbs>
 
-				<Typography variant='h5' my={2}>
-					Inventory Management
-				</Typography>
+				<Typography variant='h5'>Inventory Management</Typography>
 
-				{!!filterChips.length && (
-					<Stack direction='row' gap={2} mb={2}>
-						{filterChips.map(item => (
-							<Chip key={item.key} label={item.label} onDelete={() => handleDeleteFilterChip(item.key)} />
-						))}
-
-						<Chip
-							label='Clear Filters'
-							onClick={() => handleDeleteFilterChip()}
-							color='error'
-							variant='outlined'
-						/>
-					</Stack>
-				)}
+				<FilterChips />
 
 				<Paper sx={{ width: '100%', mb: 2 }} variant='outlined'>
 					<EnhancedTableToolbar
@@ -480,7 +401,9 @@ export function BookTable() {
 											<TableCell component='th' id={labelId} scope='row' padding='none'>
 												{row.isbn}
 											</TableCell>
-											<TableCell align='left'>{row.title}</TableCell>
+											<TableCell align='left'>
+												<LinkRouter to={`/books/${row._id}`}>{row.title}</LinkRouter>
+											</TableCell>
 											<TableCell align='left'>{row.author}</TableCell>
 											<TableCell align='left' sx={{ minWidth: 110 }}>
 												{row.createdAt.toString().split('T')[0]}
@@ -503,7 +426,7 @@ export function BookTable() {
 								})}
 								{emptyRows > 0 && (
 									<TableRow style={{ height: 53 * emptyRows }}>
-										<TableCell colSpan={6} />
+										<TableCell colSpan={7} />
 									</TableRow>
 								)}
 							</TableBody>
@@ -521,7 +444,7 @@ export function BookTable() {
 						showLastButton
 					/>
 				</Paper>
-			</Box>
+			</Stack>
 		);
 	}
 }

@@ -1,4 +1,5 @@
-import { Avatar, ListItem, ListItemAvatar, ListItemText, Rating, Typography } from '@mui/material';
+import { ListItem, ListItemAvatar, ListItemText, Rating, Typography } from '@mui/material';
+import { UserAvatar } from '../../../components';
 import { ReviewT } from '../../../types';
 
 interface PropsI {
@@ -9,7 +10,7 @@ export function ReviewItem({ review }: PropsI) {
 	return (
 		<ListItem key={review._id} alignItems='flex-start'>
 			<ListItemAvatar>
-				<Avatar>{review.userId.name.charAt(0).toUpperCase()}</Avatar>
+				<UserAvatar userName={review.userId.name} />
 			</ListItemAvatar>
 			<ListItemText
 				primary={

@@ -11,7 +11,7 @@ interface Review extends Document {
 const reviewSchema = new Schema<Review>({
 	bookId: { type: Schema.Types.ObjectId, ref: 'Book', required: true },
 	userId: { type: Schema.Types.ObjectId, ref: 'User', required: true },
-	rating: { type: Number, min: 1, max: 5, required: true },
+	rating: { type: Number, min: 0.5, max: 5, required: true },
 	review: { type: String },
 	createdAt: { type: Date, default: Date.now },
 });
