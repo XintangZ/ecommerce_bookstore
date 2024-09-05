@@ -1,6 +1,6 @@
 import { MenuItem, Select, SelectChangeEvent, SelectProps } from '@mui/material';
 import { useSearchParams } from 'react-router-dom';
-import { useGetCategories } from '../../services';
+import { useGetCategories } from '../services';
 
 export function CategorySelect({ ...props }: Omit<SelectProps, 'onChange' | 'value'>) {
 	const [searchParams, setSearchParams] = useSearchParams();

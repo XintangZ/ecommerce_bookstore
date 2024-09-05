@@ -23,6 +23,7 @@ import {
 } from '@mui/material';
 import * as React from 'react';
 import { useNavigate } from 'react-router-dom';
+import { SearchBar, UserAvatar } from '../components';
 import { useAuth, useCart } from '../contexts';
 import { getCartItemFromLocalStorage } from '../utils';
 
@@ -116,20 +117,28 @@ export function Nav() {
 						</Button>
 					</Box>
 
-					<Stack sx={{ flexGrow: 0, flexDirection: 'row', gap: 2 }}>
-						{!isAdmin && (
-							<Tooltip title='Cart'>
-								<IconButton size='large' color='inherit' onClick={() => navigate('/cart')}>
-									<Badge badgeContent={cartItemCount} color='error'>
-										<ShoppingCartIcon />
-									</Badge>
-								</IconButton>
-							</Tooltip>
-						)}
+					<Stack sx={{ flexGrow: 0, flexDirection: 'row', gap: 2, alignItems: 'center' }}>
+						<Stack direction='row'>
+							<SearchBar />
+
+							{!isAdmin && (
+								<Tooltip title='Cart'>
+									<IconButton size='large' color='inherit' onClick={() => navigate('/cart')}>
+										<Badge badgeContent={cartItemCount} color='error'>
+											<ShoppingCartIcon />
+										</Badge>
+									</IconButton>
+								</Tooltip>
+							)}
+						</Stack>
 
 						<Tooltip title={auth?.user.username || 'Login'}>
 							<IconButton onClick={handleOpenUserMenu} sx={{ p: 0 }}>
-								<Avatar alt={auth?.user.username} src='/static/images/avatar/2.jpg' />
+								{!!auth?.user.username ? (
+									<UserAvatar userName={auth.user.username} />
+								) : (
+									<Avatar alt='' src='/static/images/avatar/2.jpg' />
+								)}
 							</IconButton>
 						</Tooltip>
 						<Menu
@@ -147,23 +156,27 @@ export function Nav() {
 							}}
 							open={Boolean(anchorElUser)}
 							onClose={handleCloseUserMenu}>
-							{auth && [
-								<MenuItem
-									key='profile'
-									onClick={() => {
-										handleCloseUserMenu();
-										navigate('/profile');
-									}}>
-									<Typography textAlign='center'>Profile</Typography>
-								</MenuItem>,
-								<MenuItem
-								key='wishlist'
-								onClick={() => {
-									handleCloseUserMenu();
-									navigate('/wishlist');
-								}}>
-								<Typography textAlign='center'>Wishlist</Typography>
-							</MenuItem>,
+							{auth &&
+								!auth.user.isAdmin && [
+									<MenuItem
+										key='profile'
+										onClick={() => {
+											handleCloseUserMenu();
+											navigate('/profile');
+										}}>
+										<Typography textAlign='center'>Profile</Typography>
+									</MenuItem>,
+									<MenuItem
+										key='wishlist'
+										onClick={() => {
+											handleCloseUserMenu();
+											navigate('/wishlist');
+										}}>
+										<Typography textAlign='center'>Wishlist</Typography>
+									</MenuItem>,
+								]}
+
+							{auth && (
 								<MenuItem
 									key='logout'
 									onClick={() => {
@@ -172,8 +185,8 @@ export function Nav() {
 										resetCart();
 									}}>
 									<Typography textAlign='center'>Logout</Typography>
-								</MenuItem>,
-							]}
+								</MenuItem>
+							)}
 
 							{!auth && [
 								<MenuItem

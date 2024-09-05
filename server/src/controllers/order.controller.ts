@@ -36,8 +36,15 @@ export const createOrder = async (req: Request, res: Response) => {
 
 // Get all orders
 export const getAllOrders = async (req: Request, res: Response) => {
+	const {
+		page = 1,
+		limit = 10,
+		sortBy,
+		order = 'asc',
+		status,
+		customerId,
+	} = req.query;
     
-    const { page = 1, limit = 10 } = req.query;
     const { user: { isAdmin = false } = {} } = res.locals;
     const userId = res.locals.user.userId;
 
@@ -59,11 +66,27 @@ export const getAllOrders = async (req: Request, res: Response) => {
         }
 
         // Query for orders based on user's role
-        const query = isAdmin ? {} : { userId };
+		const query: any = isAdmin ? {} : { userId };
+		
+		// Filter by status if provided
+		if (status) {
+			query.status = status;
+		}
+
+		// Filter by customerId if provided
+		if (customerId) {
+			query.userId = customerId;
+		}
+
+		// Create a sort object based on sortBy and order parameters
+		const sort: any = {};
+		if (sortBy) {
+			sort[sortBy as string] = order === 'desc' ? -1 : 1;
+		}
 
         // Find orders with pagination and populate the bookId with book details
-        const orders = await Order.find(query)
-            
+		const orders = await Order.find(query)
+			.sort(sort)
             .skip((pageNumber - 1) * limitNumber)
             .limit(limitNumber)
 			.populate({

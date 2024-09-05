@@ -69,6 +69,7 @@ const getReviewsByBook = async (req: Request, res: Response) => {
 
 		// Find reviews with pagination
 		const reviews = await Review.find({ bookId })
+			.sort({ createdAt: -1 })
 			.skip((pageNumber - 1) * limitNumber)
 			.limit(limitNumber)
 			.populate('userId')
@@ -125,6 +126,7 @@ const getReviewsByUser = async (req: Request, res: Response) => {
 
 		// Find reviews with pagination
 		const reviews = await Review.find({ userId })
+			.sort({ createdAt: -1 })
 			.skip((pageNumber - 1) * limitNumber)
 			.limit(limitNumber)
 			.populate('userId')

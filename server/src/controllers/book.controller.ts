@@ -100,7 +100,7 @@ const getAllBooks = async (req: Request, res: Response) => {
 		// Vague search
 		if (search) {
 			query.$or = [
-				{ isbn: { $regex: new RegExp(search as string, 'i') } },
+				{ isbn: search as string },
 				{ title: { $regex: new RegExp(search as string, 'i') } },
 				{ author: { $regex: new RegExp(search as string, 'i') } },
 			];

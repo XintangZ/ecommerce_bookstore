@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useAuth, useCart } from "../../../contexts";
 import { fetchBook, useGetUser, useUpdateWishlist } from "../../../services";
 import { Box, Button, Card, CardMedia, Divider, Grid, Link, Typography } from "@mui/material";
@@ -6,20 +6,18 @@ import MenuIcon from '@mui/icons-material/Menu';
 import DeleteIcon from '@mui/icons-material/Delete';
 import { BookT, GetBookByIdResT } from "../../../types";
 import { enqueueSnackbar } from "notistack";
+import { useQueryClient } from "@tanstack/react-query";
+import { LinkRouter } from "../../../components";
 
 export function Wishlist() {
   const { auth } = useAuth();
   const { addToCartAndUpdateServer } = useCart();
-  const [wishlist, setWishlist] = useState<string[]>([]);
+  const queryClient = useQueryClient();
   const { data: userData } = useGetUser(auth?.token as string);
   const updateListMutation = useUpdateWishlist(auth?.token as string);
   const [books, setBooks] = useState<GetBookByIdResT[]>([]);
 
-  useEffect(() => {
-    if (userData) {
-      setWishlist(userData.data.wishlist || []);
-    }
-  }, [userData]);
+	const wishlist = useMemo(() => userData?.data?.wishlist || ([] as string[]), [userData]);
 
   useEffect(() => {
     const fetchBooksInfo = async () => {
@@ -56,9 +54,6 @@ export function Wishlist() {
     dragItem.current = null;
     dragOverItem.current = null;
 
-    // Update wishlist in the state
-    setWishlist(_wishlistItems);
-
     // Update the wishlist on the server
     try {
       await updateListMutation.mutateAsync({
@@ -67,6 +62,8 @@ export function Wishlist() {
     } catch (error) {
       console.error("Failed to update wishlist", error);
     }
+
+		queryClient.invalidateQueries({ queryKey: ['user', auth?.token] });
   }
 
   const handleRemove = async (book: BookT) => {
@@ -77,8 +74,8 @@ export function Wishlist() {
       await updateListMutation.mutateAsync({
         wishlist: newWishlist,
       });
-      // Update the state with the new wishlist
-      setWishlist(newWishlist);
+
+			queryClient.invalidateQueries({ queryKey: ['user', auth?.token] });
 
       // Update the books array
       const updatedBooks = books.filter(book => book.data._id !== book.data._id);
@@ -118,7 +115,6 @@ export function Wishlist() {
           >
             <Card
               variant='outlined'
-              elevation={3}
               sx={{
                 maxWidth: 1000,
                 height: '100%',
@@ -147,7 +143,9 @@ export function Wishlist() {
                   />
                 </Grid>
                 <Grid item xs={6}>
-                  <Typography variant="h6" sx={{ pt: 2, mb: 1 }}>{item.data.title || "Loading..."}</Typography>
+									<LinkRouter to={`/books/${item.data._id}`}>
+                    <Typography variant="h6" sx={{ pt: 2, mb: 1 }}>{item.data.title || "Loading..."}</Typography>
+									</LinkRouter>
                   <Typography variant="body2">{item.data.author || "Loading"}</Typography>
                   <Typography variant="h6" sx={{ pt: 2, mb: 1 }}>${item.data.price || "Loading..."}</Typography>
                 </Grid>
