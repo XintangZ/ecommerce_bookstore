@@ -19,4 +19,18 @@ const authenticateJWT = (req: Request, res: Response, next: NextFunction) => {
     }
 };
 
-export { authenticateJWT };
+const extractUserFromJWT = (req: Request, res: Response, next: NextFunction) => {
+    const authHeader = req.headers?.authorization;
+    if (authHeader) {
+      const token = authHeader.split(' ')[1]; 
+      const secretKey = process.env.JWT_SECRET || 'default_secret_key'; 
+        const decoded = jwt.verify(token, secretKey);
+        res.locals.user = decoded; 
+        next();
+    } else {
+      // No token, but continue to the route
+      next();
+    }
+  };
+
+export { authenticateJWT, extractUserFromJWT };
