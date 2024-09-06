@@ -131,7 +131,7 @@ export class ChatService {
     const orders = await Order.find({ userId }).exec();
 
     if (orders.length > 0) {
-      const oneOrderMessage = `You have ${orders.length} order. The order is ${orders[0].status}. Click<a href='FRONTEND_URL/orders'> here </a>to check your order.`;
+      const oneOrderMessage = `You have ${orders.length} order. The order is ${orders[0].status}. Click <a href='FRONTEND_URL/orders'>here</a> to check your order.`;
       const multipleOrdersMessage = `You have ${orders.length} orders. The latest order is ${orders[0].status}. Click<a href='FRONTEND_URL/orders'> here </a>to see the list.`
       return orders.length == 1 ? oneOrderMessage : multipleOrdersMessage;
     } else {

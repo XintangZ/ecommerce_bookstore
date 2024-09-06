@@ -7,3 +7,4 @@ export * from './Profile/Profile';
 export * from './Orders/Orders';
 export * from './Orders/OrderTable';
 export * from './Profile/Profile';
+export * from './Chatbot/Chatbot';
