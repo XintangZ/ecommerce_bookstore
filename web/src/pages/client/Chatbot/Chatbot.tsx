@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import axios from 'axios';
 import { BACKEND_URL } from '../../../consts';
 import { getHeaders } from '../../../utils';

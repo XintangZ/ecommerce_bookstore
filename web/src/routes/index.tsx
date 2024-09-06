@@ -15,7 +15,7 @@ import { GuestRoute } from './GuestRoute';
 import { ProtectedRoute } from './ProtectedRoute';
 import { Profile } from '../pages/client/Profile/Profile';
 import { Wishlist } from '../pages/client/Profile/Wishlist';
-import Chatbot from '../pages/client/Chatbot/Chatbot';
+import { Chatbot } from '../pages/client/Chatbot/Chatbot';
 
 function AppRoutes() {
 	const { auth } = useAuth();
