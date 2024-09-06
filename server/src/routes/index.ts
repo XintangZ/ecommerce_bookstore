@@ -7,3 +7,4 @@ export * from './review.route';
 export * from './user.route';
 export * from './order.route';
 export * from './cart.route';
+export * from './chat.route';
