@@ -22,17 +22,18 @@ import {
 import { green, yellow } from '@mui/material/colors';
 import { useQueryClient } from '@tanstack/react-query';
 import { enqueueSnackbar } from 'notistack';
-import React, { useMemo } from 'react';
+import React from 'react';
 import { BookReviewDialog, LinkRouter } from '../../../components';
 import { useUpdateMultipleBookStocks, useUpdateOrder } from '../../../services';
 import { CreateOrderValidationT, GetAllOrdersResT } from '../../../types';
 
 interface OrderTableProps {
+	orders: GetAllOrdersResT;
 	open: string | null;
 	setOpen: (id: string | null) => void;
 }
 
-const OrderTable: React.FC<OrderTableProps> = ({ open, setOpen }) => {
+const OrderTable: React.FC<OrderTableProps> = ({ orders, open, setOpen }) => {
 	const [openDialog, setOpenDialog] = React.useState(false);
 	const [selectedOrderId, setSelectedOrderId] = React.useState<string | null>(null);
 	const [isShipping, setIsShipping] = React.useState(false); // To differentiate between cancel and ship
@@ -44,8 +45,6 @@ const OrderTable: React.FC<OrderTableProps> = ({ open, setOpen }) => {
 	const isAdmin = user ? JSON.parse(user).isAdmin : false;
 
 	const queryClient = useQueryClient();
-	const queryCache = queryClient.getQueriesData({ queryKey: ['orders'] });
-	const orderCache = useMemo(() => queryCache[0][1] as GetAllOrdersResT, [queryCache]);
 
 	const handleCancelClick = (orderId: string) => {
 		setSelectedOrderId(orderId);
@@ -65,7 +64,7 @@ const OrderTable: React.FC<OrderTableProps> = ({ open, setOpen }) => {
 			const status = isShipping ? 'Shipped' : 'Cancelled';
 
 			// Find the selected order based on selectedOrderId
-			const selectedOrder = orderCache.data.find(order => order._id === selectedOrderId);
+			const selectedOrder = orders.data.find(order => order._id === selectedOrderId);
 
 			if (selectedOrder) {
 				updateOrder(
@@ -84,24 +83,21 @@ const OrderTable: React.FC<OrderTableProps> = ({ open, setOpen }) => {
 									updateStock(
 										{ bookIds: [bookId._id], stockChange },
 										{
-											onSuccess: () => {
-												enqueueSnackbar(`Stock updated for book ID: ${bookId}`, {
-													variant: 'success',
-												});
-											},
-											onError: error => {
-												enqueueSnackbar(`Error updating stock for book ID: ${bookId}`, {
-													variant: 'error',
-												});
-												console.error(`Error updating stock for book ID: ${bookId}`, error);
-											},
+											onError: error =>
+												console.error(`Error updating stock for book ID: ${bookId}`, error),
 										}
 									);
 								}
 							}
 							queryClient.invalidateQueries({ queryKey: ['orders'] });
+							enqueueSnackbar(`Order ${isShipping ? 'shipped' : 'cancelled'} successfully`, {
+								variant: 'success',
+							});
 						},
 						onError: error => {
+							enqueueSnackbar('Something went wrong', {
+								variant: 'error',
+							});
 							console.error('Error updating order:', error);
 						},
 					}
@@ -117,7 +113,7 @@ const OrderTable: React.FC<OrderTableProps> = ({ open, setOpen }) => {
 
 	return (
 		<>
-			{orderCache.data.length === 0 ? (
+			{orders.data.length === 0 ? (
 				<Typography variant='h6' align='center' sx={{ my: 4, color: 'text.secondary' }}>
 					No Orders.
 				</Typography>
@@ -136,7 +132,7 @@ const OrderTable: React.FC<OrderTableProps> = ({ open, setOpen }) => {
 							</TableRow>
 						</TableHead>
 						<TableBody>
-							{orderCache.data.map(order => (
+							{orders.data.map(order => (
 								<React.Fragment key={order._id}>
 									<TableRow sx={{ '& > *': { borderBottom: 'unset' } }}>
 										<TableCell>
