@@ -35,7 +35,7 @@ export function Orders() {
 
 	if (isSuccess && data) {
 		const {
-			data: orders,
+			data: orders, // Destructure orders from data
 			pagination: { totalPages, totalItems },
 		} = data as GetAllOrdersResT;
 
@@ -85,7 +85,8 @@ export function Orders() {
 					</Grid>
 				</Grid>
 
-				<OrderTable open={open} setOpen={setOpen} />
+				{/* Pass orders directly to OrderTable */}
+				<OrderTable open={open} setOpen={setOpen} orders={orders} />
 
 				{totalPages > 1 && (
 					<MuiPagination
