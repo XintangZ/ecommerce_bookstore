@@ -159,7 +159,6 @@ export function Profile() {
     isAdmin: user.isAdmin
     };
     try {
-      console.log("userData",userData)
       await updateUser.mutateAsync(userData);
       enqueueSnackbar('Profile updated successfully!', { variant: 'success' });
 
