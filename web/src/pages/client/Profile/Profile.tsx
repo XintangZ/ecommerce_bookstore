@@ -231,6 +231,7 @@ export function Profile() {
                 <Select
                   labelId="province-label"
                   name="province"
+                  label="Province"
                   value={user.address?.province || ''}
                   onChange={handleProvinceChange}
                 >
