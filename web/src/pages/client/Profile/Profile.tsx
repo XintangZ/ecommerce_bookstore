@@ -133,12 +133,12 @@ export function Profile() {
   };
 
   const handleProvinceChange = (event: SelectChangeEvent<string>) => {
-    const { name, value } = event.target;
+    const value = event.target.value;
     setUser((prevUser) => ({
       ...prevUser,
       address: {
         ...prevUser.address,
-        [name]: value,
+        province: value,
       } as AddressT,
     }));
   };
@@ -159,6 +159,7 @@ export function Profile() {
     isAdmin: user.isAdmin
     };
     try {
+      console.log("userData",userData)
       await updateUser.mutateAsync(userData);
       enqueueSnackbar('Profile updated successfully!', { variant: 'success' });
 
@@ -167,6 +168,7 @@ export function Profile() {
       // Handle the error, e.g., show an error message
       console.error('Update failed:', error);
     }
+
   };
 
   return (
