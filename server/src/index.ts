@@ -14,7 +14,7 @@ connectDB();
 // Initialize chat service and ensure it's ready before starting the server
 const startServer = async () => {
     const chatService = ChatService.getInstance();
-    await chatService.initialize().catch(console.error); // Ensure initialization is complete
+    chatService.initialize().catch(console.error); // Ensure initialization is complete
 
     const app = express();
 
@@ -32,10 +32,7 @@ const startServer = async () => {
     app.use('/', chatRoute());
 
     // Error handling middleware
-    app.use((err: Error, req: express.Request, res: express.Response, next: express.NextFunction) => {
-        console.error(err.stack);
-        res.status(500).send('Server Error');
-    });
+    // app.use(errorMiddleware);
 
     const PORT = process.env.PORT || 5000;
     app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
