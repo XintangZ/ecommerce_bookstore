@@ -29,11 +29,11 @@ id_num,question,answer
 28,Which payment options do you offer?,"We accept major credit cards, PayPal, and bank transfers."
 29,Can I use PayPal to pay for my purchase?,"We accept major credit cards, PayPal, and bank transfers."
 30,Do you accept bank transfers?,"We accept major credit cards, PayPal, and bank transfers."
-31,Do you offer free shipping?,We offer free shipping on orders over $100.
-32,Is there free delivery available?,We offer free shipping on orders over $100.
-33,How can I get free shipping?,We offer free shipping on orders over $100.
-34,Do you charge for shipping?,We offer free shipping on orders over $100.
-35,What are the shipping charges?,We offer free shipping on orders over $100.
+31,Do you offer free shipping?,"We offer free shipping on orders over $100. For orders less than $100, we provide two shipping options: Standard Shipping (3-4 days) - $5.99, Express Shipping (1-2 days) - $12.99"
+32,Is there free delivery available?,"We offer free shipping on orders over $100. For orders less than $100, we provide two shipping options: Standard Shipping (3-4 days) - $5.99, Express Shipping (1-2 days) - $12.99"
+33,How can I get free shipping?,"We offer free shipping on orders over $100. For orders less than $100, we provide two shipping options: Standard Shipping (3-4 days) - $5.99, Express Shipping (1-2 days) - $12.99"
+34,Do you charge for shipping?,"We offer free shipping on orders over $100. For orders less than $100, we provide two shipping options: Standard Shipping (3-4 days) - $5.99, Express Shipping (1-2 days) - $12.99"
+35,What are the shipping charges?,"We offer free shipping on orders over $100. For orders less than $100, we provide two shipping options: Standard Shipping (3-4 days) - $5.99, Express Shipping (1-2 days) - $12.99"
 36,Do you ship internationally?,"Yes, we ship to select countries worldwide. Please check our shipping page for details."
 37,Can I place an order from outside the country?,"Yes, we ship to select countries worldwide. Please check our shipping page for details."
 38,Do you deliver internationally?,"Yes, we ship to select countries worldwide. Please check our shipping page for details."
