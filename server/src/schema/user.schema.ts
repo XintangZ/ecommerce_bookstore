@@ -7,7 +7,7 @@ const userBaseSchema = z.object({
     street: z.string().optional(),
     city: z.string().optional(),
     postalCode: z.string().optional(),
-    provice: z.string().optional(),
+    province: z.string().optional(),
   }).optional(),
   cart: z.array(z.object({
     bookId: z.string().min(1, { message: 'Book ID is required' }),
