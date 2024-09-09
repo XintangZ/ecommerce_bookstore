@@ -1,7 +1,7 @@
-import ContactSupportIcon from '@mui/icons-material/ContactSupport';
-import { Container, Fab, Stack } from '@mui/material';
+import { Container, Stack } from '@mui/material';
 import { Outlet, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts';
+import { Chatbot } from '../pages/client';
 import { Banner } from './Banner';
 import { Footer } from './Footer';
 import { Nav } from './Nav';
@@ -19,11 +19,7 @@ export function MainLayout() {
 				<Container sx={{ flexGrow: 1, py: 3 }}>
 					<Outlet />
 
-					{!auth?.user.isAdmin && (
-						<Fab color='secondary' aria-label='support' sx={{ position: 'fixed', bottom: 80, right: 20 }}>
-							<ContactSupportIcon fontSize='large' />
-						</Fab>
-					)}
+					{!auth?.user.isAdmin && <Chatbot />}
 				</Container>
 
 				<Footer />
