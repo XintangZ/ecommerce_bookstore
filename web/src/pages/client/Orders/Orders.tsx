@@ -35,7 +35,6 @@ export function Orders() {
 
 	if (isSuccess && data) {
 		const {
-			data: orders,
 			pagination: { totalPages, totalItems },
 		} = data as GetAllOrdersResT;
 
@@ -85,7 +84,7 @@ export function Orders() {
 					</Grid>
 				</Grid>
 
-				<OrderTable open={open} setOpen={setOpen} />
+				<OrderTable orders={data} open={open} setOpen={setOpen} />
 
 				{totalPages > 1 && (
 					<MuiPagination
