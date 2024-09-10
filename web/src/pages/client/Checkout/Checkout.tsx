@@ -180,7 +180,7 @@ const clearCartMutation = useClearCart(auth?.token as string);
 const { resetCart } = useCart();
 
 const handleSubmit = async () => {
-  if (!address.street || !address.city || !address.postalCode || !address.province) {
+  if (!address.firstName || !address.lastName || !address.phoneNumber || !address.street || !address.city || !address.postalCode || !address.province) {
       setIsError(true);
       return;
   }
